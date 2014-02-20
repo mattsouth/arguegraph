@@ -1,0 +1,15 @@
+{
+    "name" : "arguejs",
+    "version" : "0.0.1",
+    "author" : "Matt South <matt@mattsouth.net>",
+    "repository" : {
+        "type" : "git",
+        "url" : "https://github.com/mattsouth/arguejs"
+    },
+    "dependencies" : {
+        "coffee-script" :   "*",
+        "mocha" :           "*",
+        "chai" :            "*",
+        "vis" :             "*"
+    }
+}
