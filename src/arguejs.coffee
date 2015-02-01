@@ -8,7 +8,7 @@ wrapper around a graph that
 ###
 
 # labels each node with it's grounded acceptance
-exports.grounded = (graph) ->
+grounded = (graph) ->
     # label all nodes out
     # label all unattacked nodes in and others out
     # examine each out node.  If an out node's attackers are all out and each of their attackers are in, then label in.
@@ -53,10 +53,10 @@ class Tokeniser
         @current = null
         @type = "eol"
 
-exports.parseInformal = (graph) -> 
+parseInformal = (graph) -> 
     nodes = []
     edges = []
-    lines = graph.split("\\n")
+    lines = if graph.indexOf('\u000a')>-1 then graph.split('\u000a') else graph.split("\\n")
     for line in lines
         tok = new Tokeniser(line)
         if tok.type is 'lab'
@@ -78,3 +78,6 @@ exports.parseInformal = (graph) ->
                         edges.push edge
     { nodes: ({label: node, id: idx} for node, idx in nodes), edges: edges }
 
+root = exports ? window
+root.grounded = grounded
+root.parseInformal = parseInformal

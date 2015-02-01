@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <title>Arguejs | Demo</title>
+
+  <script type="text/javascript" src="vis.js"></script>
+  <script type="text/javascript" src="../src/arguejs.js"></script>
+</head>
+
+<body>
+<textarea id="definition" cols="10" rows="10">
+a b
+b a
+</textarea>
+<div id="mynetwork"></div>
+
+<script type="text/javascript">
+  function updateGraph(def) {
+    var data = parseInformal(def);
+    grounded(data);
+    var nodes = data.nodes;
+    data.nodes = nodes.map(function(node) {
+      if (node.grounded) {
+        node.color="yellow";
+      } else {
+        node.color="red";
+      }
+      return node;
+    });
+    // create a network
+    var container = document.getElementById('mynetwork');
+    var options = {
+      width: '400px',
+      height: '400px',
+      edges: {        
+        style: 'arrow'
+      }
+    };
+    var network = new vis.Network(container, data, options);    
+  }
+  updateGraph(document.getElementById('definition').value.trim());
+  document.getElementById('definition').onchange = function(e) {
+    updateGraph(e.target.value.trim());
+  };
+</script>
+
+</body>
+</html>
