@@ -1,0 +1,54 @@
+<!doctype html>
+<html>
+<head>
+  <title>Arguejs | Demo</title>
+	<link rel="stylesheet" href="/etc/css/normalize.css">
+	<link rel="stylesheet" href="/etc/css/skeleton.css">
+  <script type="text/javascript" src="vis.js"></script>
+  <script type="text/javascript" src="../src/arguejs.js"></script>
+</head>
+<body>
+<div class="container">
+<div class="row">
+  <div class="three columns"><h4 class="u-pull-left">Arguejs</h4></div>
+  <div class="seven columns">
+    <input class="u-full-width" type="text" name="argument" placeholder="Enter argument text" id="argumentText" on/>
+  </div>
+  <div class="two columns">
+    <input type="submit" class="button u-full-width" onclick="addArgument()" value="Add &raquo;" />
+  </div>
+</div>
+<div id="mynetwork"></div>
+<div class="row">
+  <div class="twelve rows">
+  <button onclick="clearArguments()">clear</button>
+  </div>
+</div>
+</div>
+<script type="text/javascript">
+var nodes = new vis.DataSet()
+var edges = new vis.DataSet()
+
+// create a network
+var container = document.getElementById('mynetwork');
+var data = {
+  nodes: nodes,
+  edges: edges
+};
+var options = {};
+var network = new vis.Network(container, data, options);
+
+function addArgument() {
+  var el = document.getElementById('argumentText');
+  nodes.add({id: nodes.length, shape: 'text', label: el.value});
+  el.value = null;
+}
+
+function clearArguments() {
+  nodes.clear();
+  edges.clear();
+}
+
+</script>
+</body>
+</html>
