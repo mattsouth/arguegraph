@@ -4,44 +4,61 @@
   <title>Arguejs | Demo</title>
 	<link rel="stylesheet" href="/etc/css/normalize.css">
 	<link rel="stylesheet" href="/etc/css/skeleton.css">
+  <link rel="stylesheet" href="/etc/vis.css">
   <script type="text/javascript" src="vis.js"></script>
   <script type="text/javascript" src="../src/arguejs.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+  <style>
+  #mynetwork {
+    border: 1px solid lightgray;
+  }
+  .topline input {
+    margin-top: 10px;
+    margin-bottom: 12px;
+  }
+  .topline h4 {
+    margin-top: 10px;
+    margin-bottom: 0px;
+  }
+  </style>
 </head>
 <body>
 <div class="container">
-<div class="row">
-  <div class="three columns"><h4 class="u-pull-left">Arguejs</h4></div>
-  <div class="seven columns">
-    <input class="u-full-width" type="text" name="argument" placeholder="Enter argument text" id="argumentText" on/>
+<div class="row topline">
+  <div class="three columns"><h4>Arguejs</h4></div>
+  <div class="six columns">
+    <input class="u-full-width" type="text" name="argument" placeholder="New argument" id="argumentText"/>
   </div>
-  <div class="two columns">
-    <input type="submit" class="button u-full-width" onclick="addArgument()" value="Add &raquo;" />
+  <div class="three columns">
+    <input type="submit" id="argumentAdd" class="button u-full-width" onclick="addArgument()" value="Add &raquo;" />
+    <input type="submit" id="argumentUpdate" class="button u-full-width" style="display: none" value="Update &raquo;" />    
   </div>
 </div>
-<div id="mynetwork"></div>
+<div id="mynetwork" style="margin-bottom: 10px"></div>
 <div class="row">
-  <div class="twelve rows">
+  <div class="twelve columns">
   <button onclick="clearArguments()">clear</button>
   </div>
 </div>
 </div>
 <script type="text/javascript">
-var nodes = new vis.DataSet()
-var edges = new vis.DataSet()
 
-// create a network
-var container = document.getElementById('mynetwork');
-var data = {
-  nodes: nodes,
-  edges: edges
-};
-var options = {};
-var network = new vis.Network(container, data, options);
+var nodes = null;
+var edges = null;
 
 function addArgument() {
-  var el = document.getElementById('argumentText');
-  nodes.add({id: nodes.length, shape: 'text', label: el.value});
-  el.value = null;
+  var input = $('#argumentText');
+  nodes.add({id: nodes.length, label: input.val()});
+  input.val(null);
+}
+
+function updateArgument(data, callback) {
+  var input = $('#argumentText');
+  data.label = input.val();
+  input.val(null);
+  $('#argumentUpdate').hide()
+  $('#argumentAdd').show()  
+  callback(data);
 }
 
 function clearArguments() {
@@ -49,6 +66,38 @@ function clearArguments() {
   edges.clear();
 }
 
+$(window).load(function(){
+  nodes = new vis.DataSet()
+  edges = new vis.DataSet()
+
+  $('#mynetwork').height($(window).innerHeight()-128);
+
+  // create a network
+  var container = document.getElementById('mynetwork');
+  var data = {
+    nodes: nodes,
+    edges: edges
+  };
+  var options = {
+    dataManipulation: {
+      enabled: true,
+      initiallyVisible: true,
+    },
+    edges: {
+      style: 'arrow'
+    },
+    onEdit: function(data,callback) {
+      $('#argumentUpdate').show();
+      $('#argumentAdd').hide();
+      $('#argumentText').val(data.label);
+      el = document.getElementById('argumentUpdate');
+      // see visjs ex 21.  todo: do this with jquery
+      el.onclick = updateArgument.bind(this, data, callback);
+    }
+  };
+  var network = new vis.Network(container, data, options);
+
+});
 </script>
 </body>
 </html>
