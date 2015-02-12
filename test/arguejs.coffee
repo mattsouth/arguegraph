@@ -5,6 +5,26 @@ Tests = require './test'
 Async = require 'async'
 Mocha = require 'mocha'
 
+describe 'Argument Framework', ->
+    it 'trivial AF', (done) ->
+        trivial = new Arguejs.ArgumentFramework Parser.parseInformal 'a'
+        trivial.isConflictFree([]).should.be.true
+        trivial.isConflictFree([{id: 0}]).should.be.true
+        trivial.isAcceptable({id:0}, []).should.be.true
+        trivial.isAdmissible([{id:0}]).should.be.true
+        done()
+
+    it 'basic AF', (done) ->
+        basic = new Arguejs.ArgumentFramework Parser.parseInformal 'a b\\nb c'
+        basic.isConflictFree([{id: 0}]).should.be.true
+        basic.isConflictFree([{id: 0},{id: 1}]).should.be.false
+        basic.isConflictFree([{id: 0},{id: 2}]).should.be.true
+        basic.isAcceptable({id:0}, []).should.be.false
+        basic.isAcceptable({id:0}, [{id:0}]).should.be.false
+        basic.isAcceptable({id:0}, [{id:0},{id:2}]).should.be.true
+        basic.isAdmissible([{id:0},{id:2}]).should.be.true
+        done()
+
 suite = describe 'Grounded Semantics', ->
     before (done) ->
         for test in Tests
