@@ -1,76 +1,46 @@
-###
-Reasoners annotate a graph with indicators of node status (accepted / in abeyance / not accepted)
-possible designs include:
-static reasoning method
-wrapper around a graph that
-* listens to changes in the graph and updates accordingly
-* provides additional information 
-###
 class ArgumentFramework
-    ###
-    datamodel based on the visjs network model for nodes and edges, i.e.: 
-    @nodes: {
-        id: unique
-        label: string
-    }
-    @edges: {
-        from: id
-        to: id
-    }
-    ###
-    constructor: (graph = {nodes: [], edges: []}) ->
-        @args = graph.nodes
-        @attacks = graph.edges
-        @argids = (arg.id for arg in @args) # cache of arg ids
-        @attackermap = {}                   # cache of arg ids that attack particular arg id
-        # populate attackermap and check consistency of attacks
-        for attack in @attacks
-            if attack.from not in @argids
-                throw new Error("unknown arg id in attack.from: #{attack}") 
-            if attack.to not in @argids
-                throw new Error("unknown arg id in attack.to: #{attack}") 
-            if @attackermap[attack.to]?
-                @attackermap[attack.to].push attack.from
-            else
-                @attackermap[attack.to] = [attack.from]
+    # attackermap: object that maps argument ids to array of attacking argument ids
+    constructor: (@attackermap={}) ->
+        @argids = Object.keys(@attackermap) # cache of arg ids
 
-    # args: subset of AF.args
+    # args: subset of @argids
     # returns true if no member of args attacks another member of args
     isConflictFree: (args) ->
         for target in args
-            if target.id not in @argids
-                throw new Error("Unknown arg id: #{arg}")
             for test in args
-                if @attackermap[target.id]? and test.id in @attackermap[target.id]
+                if @attackermap[target]? and test in @attackermap[target]
                     return false
         return true
 
-    # arg: member of AF.args
-    # args: subset of AF.args
+    # arg: member of @argids
+    # args: subset of @argids
     # returns true if all attackers of arg are defended by args
     isAcceptable: (arg, args) ->
-        if arg.id not in @argids
-            throw new Error("unknown arg id in arg: #{arg}")
-        defenders = (defender.id for defender in args)
-        isDefended = (attackerid) =>
+        isDefended = (attacker) =>
             # must find a defender within the list of the attacker's attackers
-            possibledefs = @attackermap[attackerid] || []
-            for defender in defenders
+            possibledefs = @attackermap[attacker] || []
+            for defender in args
                 if defender in possibledefs
                     return true
             return false
-        if @attackermap[arg.id]?
-            for attacker in @attackermap[arg.id]
+        if @attackermap[arg]?
+            for attacker in @attackermap[arg]
                 unless isDefended(attacker)
                     return false
             return true
         else
             true
 
-    # args: subset of AF.args
+    # args: subset of @argids
     # returns true if args is conflict free and each member is acceptable wrt to itself
     isAdmissible: (args) ->
         @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)     
+
+graphToAF = (graph) ->
+    map = {}
+    map[arg.id] = [] for arg in graph.nodes
+    map[attack.to].push(attack.from.toString()) for attack in graph.edges
+    new ArgumentFramework(map)
 
 # labels each node with it's grounded acceptance
 grounded = (graph) ->
@@ -89,4 +59,5 @@ grounded = (graph) ->
 
 root = exports ? window
 root.grounded = grounded
+root.graphToAF = graphToAF
 root.ArgumentFramework = ArgumentFramework

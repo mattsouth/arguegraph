@@ -6,32 +6,34 @@ Async = require 'async'
 Mocha = require 'mocha'
 
 describe 'Argument Framework', ->
-    it 'single unattacked argument', (done) ->
-        trivial = new Arguejs.ArgumentFramework Parser.parseInformal 'a'
+    it 'single argument', (done) ->
+        # trivial = new Arguejs.ArgumentFramework { '0' : [] }
+        trivial = Arguejs.graphToAF Parser.parseInformal "a"
         trivial.isConflictFree([]).should.be.true
-        trivial.isConflictFree([{id: 0}]).should.be.true
-        trivial.isAcceptable({id:0}, []).should.be.true
-        trivial.isAdmissible([{id:0}]).should.be.true
+        trivial.isConflictFree(['0']).should.be.true
+        trivial.isAcceptable('0', []).should.be.true
+        trivial.isAdmissible(['0']).should.be.true
         done()
 
     it 'self attacking argument', (done) ->
-        depressed = new Arguejs.ArgumentFramework Parser.parseInformal 'a a'
-        console.log depressed
+        #depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
+        depressed = Arguejs.graphToAF Parser.parseInformal "a a"
         depressed.isConflictFree([]).should.be.true
-        depressed.isConflictFree([{id: 0}]).should.be.false
-        depressed.isAcceptable({id:0}, [{id: 0}]).should.be.true
-        depressed.isAdmissible([{id:0}]).should.be.false
+        depressed.isConflictFree(['0']).should.be.false
+        depressed.isAcceptable('0', ['0']).should.be.true
+        depressed.isAdmissible(['0']).should.be.false
         done()
 
     it 'chain of three', (done) ->
-        basic = new Arguejs.ArgumentFramework Parser.parseInformal 'a b\\nb c'
-        basic.isConflictFree([{id: 0}]).should.be.true
-        basic.isConflictFree([{id: 0},{id: 1}]).should.be.false
-        basic.isConflictFree([{id: 0},{id: 2}]).should.be.true
-        basic.isAcceptable({id:0}, []).should.be.false
-        basic.isAcceptable({id:0}, [{id:0}]).should.be.false
-        basic.isAcceptable({id:0}, [{id:0},{id:2}]).should.be.true
-        basic.isAdmissible([{id:0},{id:2}]).should.be.true
+        #basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
+        basic = Arguejs.graphToAF Parser.parseInformal "a b\\nb c"
+        basic.isConflictFree(['0']).should.be.true
+        basic.isConflictFree(['0','1']).should.be.false
+        basic.isConflictFree(['0','2']).should.be.true
+        basic.isAcceptable('0', []).should.be.false
+        basic.isAcceptable('0', ['0']).should.be.false
+        basic.isAcceptable('0', ['0','2']).should.be.true
+        basic.isAdmissible(['0','2']).should.be.true
         done()
 
 suite = describe 'Grounded Semantics', ->
