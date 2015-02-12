@@ -6,7 +6,7 @@ Async = require 'async'
 Mocha = require 'mocha'
 
 describe 'Argument Framework', ->
-    it 'trivial AF', (done) ->
+    it 'single unattacked argument', (done) ->
         trivial = new Arguejs.ArgumentFramework Parser.parseInformal 'a'
         trivial.isConflictFree([]).should.be.true
         trivial.isConflictFree([{id: 0}]).should.be.true
@@ -14,7 +14,16 @@ describe 'Argument Framework', ->
         trivial.isAdmissible([{id:0}]).should.be.true
         done()
 
-    it 'basic AF', (done) ->
+    it 'self attacking argument', (done) ->
+        depressed = new Arguejs.ArgumentFramework Parser.parseInformal 'a a'
+        console.log depressed
+        depressed.isConflictFree([]).should.be.true
+        depressed.isConflictFree([{id: 0}]).should.be.false
+        depressed.isAcceptable({id:0}, [{id: 0}]).should.be.true
+        depressed.isAdmissible([{id:0}]).should.be.false
+        done()
+
+    it 'chain of three', (done) ->
         basic = new Arguejs.ArgumentFramework Parser.parseInformal 'a b\\nb c'
         basic.isConflictFree([{id: 0}]).should.be.true
         basic.isConflictFree([{id: 0},{id: 1}]).should.be.false

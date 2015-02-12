@@ -21,49 +21,54 @@ class ArgumentFramework
     constructor: (graph = {nodes: [], edges: []}) ->
         @args = graph.nodes
         @attacks = graph.edges
-        @ids = (arg.id for arg in @args) # cache of ids
-        @attackers = {}                  # cache of attackers
+        @argids = (arg.id for arg in @args) # cache of arg ids
+        @attackermap = {}                   # cache of arg ids that attack particular arg id
+        # populate attackermap and check consistency of attacks
         for attack in @attacks
-            if attack.from not in @ids
+            if attack.from not in @argids
                 throw new Error("unknown arg id in attack.from: #{attack}") 
-            if attack.to not in @ids
+            if attack.to not in @argids
                 throw new Error("unknown arg id in attack.to: #{attack}") 
-            if @attackers[attack.to]
-                @attackers[attack.to].push attack.from
+            if @attackermap[attack.to]?
+                @attackermap[attack.to].push attack.from
             else
-                @attackers[attack.to] = [attack.from]
+                @attackermap[attack.to] = [attack.from]
 
-    # returns true if no members of args attacks another member of args
+    # args: subset of AF.args
+    # returns true if no member of args attacks another member of args
     isConflictFree: (args) ->
-        for target, idx in args
-            if target.id not in @ids
+        for target in args
+            if target.id not in @argids
                 throw new Error("Unknown arg id: #{arg}")
-            for test in args[idx+1..]
-                if test.id in @attackers[target.id]
+            for test in args
+                if @attackermap[target.id]? and test.id in @attackermap[target.id]
                     return false
         return true
 
-    # arg is acceptable wrt to args if all attackers of arg within this AF are defended by args
+    # arg: member of AF.args
+    # args: subset of AF.args
+    # returns true if all attackers of arg are defended by args
     isAcceptable: (arg, args) ->
-        if arg.id not in @ids
+        if arg.id not in @argids
             throw new Error("unknown arg id in arg: #{arg}")
         defenders = (defender.id for defender in args)
         isDefended = (attackerid) =>
             # must find a defender within the list of the attacker's attackers
-            possibledefs = @attackers[attackerid] || []
+            possibledefs = @attackermap[attackerid] || []
             for defender in defenders
                 if defender in possibledefs
                     return true
             return false
-        if @attackers[arg.id]?
-            for attacker in @attackers[arg.id]
+        if @attackermap[arg.id]?
+            for attacker in @attackermap[arg.id]
                 unless isDefended(attacker)
                     return false
             return true
         else
             true
 
-    # subset args of AF.args is admissible if it's conflict free and each member is acceptable wrt to itself
+    # args: subset of AF.args
+    # returns true if args is conflict free and each member is acceptable wrt to itself
     isAdmissible: (args) ->
         @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)     
 
