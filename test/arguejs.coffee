@@ -13,19 +13,23 @@ describe 'Argument Framework', ->
         trivial.isConflictFree(['0']).should.be.true
         trivial.isAcceptable('0', []).should.be.true
         trivial.isAdmissible(['0']).should.be.true
+        trivial.isComplete(['0']).should.be.true
+        trivial.isStable(['0']).should.be.true
         done()
 
     it 'self attacking argument', (done) ->
-        #depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
+        # depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
         depressed = Arguejs.graphToAF Parser.parseInformal "a a"
         depressed.isConflictFree([]).should.be.true
         depressed.isConflictFree(['0']).should.be.false
         depressed.isAcceptable('0', ['0']).should.be.true
         depressed.isAdmissible(['0']).should.be.false
+        depressed.isComplete(['0']).should.be.false
+        depressed.isStable(['0']).should.be.false
         done()
 
     it 'chain of three', (done) ->
-        #basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
+        # basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
         basic = Arguejs.graphToAF Parser.parseInformal "a b\\nb c"
         basic.isConflictFree(['0']).should.be.true
         basic.isConflictFree(['0','1']).should.be.false
@@ -34,6 +38,8 @@ describe 'Argument Framework', ->
         basic.isAcceptable('0', ['0']).should.be.false
         basic.isAcceptable('0', ['0','2']).should.be.true
         basic.isAdmissible(['0','2']).should.be.true
+        basic.isComplete(['0','2']).should.be.true
+        basic.isStable(['0','2']).should.be.true
         done()
 
 suite = describe 'Grounded Semantics', ->
