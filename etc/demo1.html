@@ -45,6 +45,17 @@
 
 var nodes = null;
 var edges = null;
+var counter = 1; // for label generation
+
+/* see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/ */
+function getNextLabel() {
+  var num = counter;
+  for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
+    ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+  }
+  counter++;
+  return ret;
+}
 
 function addArgument() {
   var input = $('#argumentText');
@@ -64,6 +75,7 @@ function updateArgument(data, callback) {
 function clearArguments() {
   nodes.clear();
   edges.clear();
+  counter = 1;
 }
 
 $(window).load(function(){
@@ -86,6 +98,10 @@ $(window).load(function(){
     edges: {
       style: 'arrow'
     },
+    onAdd: function(data, callback) {
+      data.label = getNextLabel();
+      callback(data);
+    },
     onEdit: function(data,callback) {
       $('#argumentUpdate').show();
       $('#argumentAdd').hide();
@@ -95,7 +111,7 @@ $(window).load(function(){
       el.onclick = updateArgument.bind(this, data, callback);
     }
   };
-  var network = new vis.Network(container, data, options);
+  window.network = new vis.Network(container, data, options);
 
 });
 </script>
