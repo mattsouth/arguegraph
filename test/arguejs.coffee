@@ -20,12 +20,18 @@ describe 'Argument Framework', ->
     it 'self attacking argument', (done) ->
         # depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
         depressed = Arguejs.graphToAF Parser.parseInformal "a a"
-        depressed.isConflictFree([]).should.be.true
         depressed.isConflictFree(['0']).should.be.false
         depressed.isAcceptable('0', ['0']).should.be.true
         depressed.isAdmissible(['0']).should.be.false
         depressed.isComplete(['0']).should.be.false
         depressed.isStable(['0']).should.be.false
+        done()
+
+    it 'symmetric attack', (done) ->
+        # symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
+        symmetric = Arguejs.graphToAF Parser.parseInformal "a b\\nb a"
+        symmetric.isComplete(['0']).should.be.true
+        symmetric.isComplete(['1']).should.be.true
         done()
 
     it 'chain of three', (done) ->
