@@ -1,5 +1,5 @@
 class ArgumentFramework
-    # attackermap: object that maps argument ids to array of attacking argument ids
+    # attackermap: object that maps argument ids to arrays of attacking argument ids
     constructor: (@attackermap={}) ->
         @argids = Object.keys(@attackermap) # cache of arg ids
 
@@ -36,6 +36,7 @@ class ArgumentFramework
     isAdmissible: (args) ->
         @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)     
 
+# generate ArgumentFramework From Visjs network
 graphToAF = (graph) ->
     map = {}
     map[arg.id] = [] for arg in graph.nodes
