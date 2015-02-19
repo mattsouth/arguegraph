@@ -1,11 +1,73 @@
-###
-Reasoners annotate a graph with indicators of node status (accepted / in abeyance / not accepted)
-possible designs include:
-static reasoning method
-wrapper around a graph that
-* listens to changes in the graph and updates accordingly
-* provides additional information 
-###
+class ArgumentFramework
+    # attackermap: object that maps argument ids to arrays of attacking argument ids
+    constructor: (@attackermap={}) ->
+        @argids = Object.keys(@attackermap) # cache of arg ids
+        # check that each member of @attackermap maps to an array that may or may not be empty and only contains members of @argids
+        for arg in @argids
+            unless Array.isArray(@attackermap[arg])
+                throw new Error("map[#{arg}] isnt an array.  @attackermap must contain arrays.")
+            for attacker in @attackermap[arg]
+                unless attacker in @argids
+                    throw new Error("#{attacker} - unknown attacker.  @attackermap cannot reference unknown arguments.")
+
+    # arg: member of @argids
+    # args: subset of @argids
+    # returns true if arg is attacked by a member of args
+    isAttacked: (arg, args) ->
+        for possibleattacker in args
+            return true if possibleattacker in @attackermap[arg]
+        false
+
+    # args: subset of @argids
+    # returns true if no member of args attacks another member of args
+    isConflictFree: (args) ->
+        for target in args
+            return false if @isAttacked target, args
+        true
+
+    # arg: member of @argids
+    # args: subset of @argids
+    # returns true if all attackers of arg are defended by args
+    isAcceptable: (arg, args) ->
+        for attacker in @attackermap[arg]
+            return false unless @isAttacked(attacker, args)
+        return true
+
+    # args: subset of @argids
+    # returns true if args is conflict free and each member is acceptable wrt to itself
+    isAdmissible: (args) ->
+        @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)    
+
+    # args: subset of @argids
+    # returns true if args is admissible and every acceptable argument wrt to args is in args
+    isComplete: (args) ->
+        for other in complement(args, @argids)
+            return false if @isAcceptable(other, args)
+        @isAdmissible(args)
+
+    # args: subset of @argids
+    # returns true if args is conflict free and every argument not in args is attacked by a member of args
+    isStable: (args) ->
+        for other in complement(args, @argids)
+            return false unless @isAttacked(other, args)
+        @isConflictFree(args)
+
+# the set of all subsets of S, see https://gist.github.com/joyrexus/5423644
+powerset = (S) ->
+    P = [[]]
+    P.push P[j].concat S[i] for j of P for i of S
+    P
+
+# the set of members of B who are not members of A
+complement = (A, B) ->
+    (el for el in B when el not in A)
+
+# generate ArgumentFramework From Visjs network
+graphToAF = (graph) ->
+    map = {}
+    map[arg.id] = [] for arg in graph.nodes
+    map[attack.to].push(attack.from.toString()) for attack in graph.edges
+    new ArgumentFramework(map)
 
 # labels each node with it's grounded acceptance
 grounded = (graph) ->
@@ -22,62 +84,7 @@ grounded = (graph) ->
     for node, nodeIdx in graph.nodes
         node.grounded = attacks[nodeIdx].length is 0
 
-class Tokeniser
-    constructor: (@remainder) ->
-        @current = null
-        @type = null
-        @consume()
-
-    # get next token
-    consume: () ->
-        matcher = (type, regex) =>
-            r = @remainder.match regex
-            if r
-                @remainder = r[2]
-                @current = r[1]
-                @type = type
-                true
-            else
-                false
-        # return if we've previously reached eof
-        return if @type is "eol"
-        # eat any leading white space
-        r = @remainder.match /^\s*(.*)$/
-        @remainder = r[1] if r?
-        # and check for eof
-        if @remainder is ""
-            @current = null
-        # looking good: grab next token
-        return if matcher "lab", /^([a-zA-Z0-9~][a-zA-Z0-9_]*)(.*)$/
-        # bail if our rules havent identified the next token
-        @current = null
-        @type = "eol"
-
-parseInformal = (graph) -> 
-    nodes = []
-    edges = []
-    lines = if graph.indexOf('\u000a')>-1 then graph.split('\u000a') else graph.split("\\n")
-    for line in lines
-        tok = new Tokeniser(line)
-        if tok.type is 'lab'
-            target = tok.current
-            if not (target in nodes)
-                nodes.push target
-            target_idx = nodes.indexOf target
-            while tok.type isnt 'eol'
-                tok.consume()
-                if tok.type is 'lab'
-                    attacker = tok.current
-                    if not (attacker in nodes)
-                        nodes.push attacker
-                    attacker_idx = nodes.indexOf attacker
-                    edge = 
-                        from: attacker_idx
-                        to: target_idx
-                    if not (edge in edges)
-                        edges.push edge
-    { nodes: ({label: node, id: idx} for node, idx in nodes), edges: edges }
-
 root = exports ? window
 root.grounded = grounded
-root.parseInformal = parseInformal
+root.graphToAF = graphToAF
+root.ArgumentFramework = ArgumentFramework
