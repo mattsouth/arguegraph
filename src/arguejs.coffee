@@ -5,10 +5,10 @@ class ArgumentFramework
         # check that each member of @attackermap maps to an array that may or may not be empty and only contains members of @argids
         for arg in @argids
             unless Array.isArray(@attackermap[arg])
-                throw new Error("map[#{arg}] isnt an array.  @attackermap must contain arrays.")
+                throw new Error("@attackermap[#{arg}] isnt an array.  @attackermap must contain arrays.")
             for attacker in @attackermap[arg]
                 unless attacker in @argids
-                    throw new Error("#{attacker} - unknown attacker.  @attackermap cannot reference unknown arguments.")
+                    throw new Error("#{attacker} - unknown @attackermap attacker of #{arg}.")
 
     # arg: member of @argids
     # args: subset of @argids
