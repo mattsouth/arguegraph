@@ -54,11 +54,11 @@ function getNextLabel() {
     ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
   }
   counter++;
-  for (var idx=0; idx<nodes.length; idx++) {
-    if (ret===nodes.get(idx).label) {
-      ret = getNextLabel();      
+  nodes.forEach(function(node) {
+    if (node.label==ret) {
+      ret = getNextLabel();
     }
-  }
+  });
   return ret;
 }
 
@@ -118,7 +118,14 @@ $(window).load(function(){
     }
   };
   window.network = new vis.Network(container, data, options);
-
+  window.network.on('select', function(ev) {
+    if (ev.nodes.length==0 && $('#argumentUpdate').is(":visible")) {
+      $('#argumentUpdate').hide();
+      $('#argumentUpdate').off('click');
+      $('#argumentAdd').show();
+      $('#argumentText').val(null);
+    }
+  });
 });
 </script>
 </body>

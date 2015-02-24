@@ -7,13 +7,12 @@ TODO:
 * UI for creating/saving/sharing different AFs
 * Generate all complete labellings
 * Generate all extensions (complete, stable, semi-stable, preferred, grounded, ideal)
-* argument editor should listen for a loss of selection and reset to "add argument" state if found
 
 See Also
 * http://en.wikipedia.org/wiki/Argumentation_framework
 * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.379.6308&rep=rep1&type=pdf
-* ova
-* argkit
-* nblp
+* http://ova.computing.dundee.ac.uk/ova-gen/
+* http://www.argkit.org
+* http://lidia.cs.uns.edu.ar/delp_client/
 
 
