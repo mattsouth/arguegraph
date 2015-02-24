@@ -7,7 +7,6 @@ TODO:
 * UI for creating/saving/sharing different AFs
 * Generate all complete labellings
 * Generate all extensions (complete, stable, semi-stable, preferred, grounded, ideal)
-* auto name generator should check for existing same names and increment if found
 * argument editor should listen for a loss of selection and reset to "add argument" state if found
 
 See Also

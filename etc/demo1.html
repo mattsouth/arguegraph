@@ -54,6 +54,11 @@ function getNextLabel() {
     ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
   }
   counter++;
+  for (var idx=0; idx<nodes.length; idx++) {
+    if (ret===nodes.get(idx).label) {
+      ret = getNextLabel();      
+    }
+  }
   return ret;
 }
 
