@@ -84,13 +84,5 @@ powerset = (S) ->
 complement = (A, B) ->
     (el for el in B when el not in A)
 
-# generate ArgumentFramework From Visjs network
-graphToAF = (graph) ->
-    map = {}
-    map[id] = [] for own id, node of graph.nodes
-    map[edge.to.id].push(edge.from.id.toString()) for own key, edge of graph.edges
-    new ArgumentFramework(map)
-
 root = exports ? window
-root.graphToAF = graphToAF
 root.ArgumentFramework = ArgumentFramework

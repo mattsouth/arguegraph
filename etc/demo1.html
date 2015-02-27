@@ -83,6 +83,17 @@ function clearArguments() {
   window.network._unselectAll(false);
 }
 
+function graphToAF(graph) {
+  map = {};
+  graph.nodesData.forEach(function(node) {
+    map[node.id]=[];
+  });
+  graph.edgesData.forEach(function(edge) {
+    map[edge.to].push(edge.from.toString());
+  });
+  return new ArgumentFramework(map);
+}
+
 function labelArguments() {
   var grounded = graphToAF(window.network).grounded();
   window.network.nodesData.forEach(function(node) {
