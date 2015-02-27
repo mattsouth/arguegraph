@@ -4,6 +4,8 @@ arguejs
 Abstract Argumentation library for use in nodejs or on the web.
 
 TODO:
+* demo1 -> demo. attack->defeat?
+* update demo text (e.g. Add Argument, Add Defeat ...)
 * UI for creating/saving/sharing different AFs
 * Generate all complete labellings
 * Generate all extensions (complete, stable, semi-stable, preferred, grounded, ideal)

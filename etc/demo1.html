@@ -43,8 +43,6 @@
 </div>
 <script type="text/javascript">
 
-var nodes = null;
-var edges = null;
 var counter = 1; // for label generation
 
 function getNextLabel() {
@@ -54,7 +52,7 @@ function getNextLabel() {
     ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
   }
   counter++;
-  nodes.forEach(function(node) {
+  window.network.nodesData.forEach(function(node) {
     if (node.label==ret) {
       ret = getNextLabel();
     }
@@ -64,7 +62,7 @@ function getNextLabel() {
 
 function addArgument() {
   var input = $('#argumentText');
-  nodes.add({id: nodes.length, label: input.val()});
+  window.network.nodes.add({id: window.network.nodes.length, label: input.val()});
   input.val(null);
 }
 
@@ -72,22 +70,41 @@ function updateArgument(data, callback) {
   var input = $('#argumentText');
   data.label = input.val();
   input.val(null);
-  $('#argumentUpdate').hide()
-  $('#argumentAdd').show()  
+  $('#argumentUpdate').hide();
+  $('#argumentAdd').show();
   window.network._unselectAll(false);
   callback(data);
 }
 
 function clearArguments() {
-  nodes.clear();
-  edges.clear();
+  window.network.nodes.clear();
+  window.network.edges.clear();
   counter = 1;
   window.network._unselectAll(false);
 }
 
+function labelArguments() {
+  var grounded = graphToAF(window.network).grounded();
+  window.network.nodesData.forEach(function(node) {
+    if (grounded.indexOf(node.id)>-1) {
+      node.color='yellow';
+    } else {
+      node.color='red';
+    }
+    window.network.nodesData.update(node, 'labelArgument');
+  });
+}
+
 $(window).load(function(){
-  nodes = new vis.DataSet()
-  edges = new vis.DataSet()
+  nodes = new vis.DataSet();
+  edges = new vis.DataSet();
+
+  nodes.on("*", function(event,properties,senderId) {
+    if (senderId!='labelArgument') labelArguments();
+  });
+  edges.on("*", function(event,properties,senderId) {
+    if (senderId!='labelArgument') labelArguments();
+  });
 
   $('#mynetwork').height($(window).innerHeight()-128);
 
@@ -103,7 +120,8 @@ $(window).load(function(){
       initiallyVisible: true,
     },
     edges: {
-      style: 'arrow'
+      style: 'arrow',
+      color: 'black'
     },
     onAdd: function(data, callback) {
       data.label = getNextLabel();

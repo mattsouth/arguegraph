@@ -54,9 +54,24 @@ class ArgumentFramework
 
     # returns set of accepted argument ids under grounded semantics
     grounded: ->
-        label_in = (arg for arg in @argids when @attackmap[arg].length==0)
+        label_in = (arg for arg in @argids when @attackermap[arg].length==0)
         label_out = []
-        # todo: extend both label_in and label_out until no longer possible
+        extendinout = () =>
+            result = false
+            union = label_in.concat label_out
+            others = complement(union, @argids)
+            # extendin
+            for arg in others
+                if @isAttacked(arg, label_out)
+                    label_in.push arg
+                    result = true
+            # extendout
+            for arg in others
+                if @isAttacked(arg, label_in)
+                    label_out.push arg
+                    result = true
+            extendinout() if result
+        extendinout()
         label_in
 
 # the set of all subsets of S, see https://gist.github.com/joyrexus/5423644
@@ -72,27 +87,10 @@ complement = (A, B) ->
 # generate ArgumentFramework From Visjs network
 graphToAF = (graph) ->
     map = {}
-    map[arg.id] = [] for arg in graph.nodes
-    map[attack.to].push(attack.from.toString()) for attack in graph.edges
+    map[id] = [] for own id, node of graph.nodes
+    map[edge.to.id].push(edge.from.id.toString()) for own key, edge of graph.edges
     new ArgumentFramework(map)
 
-# labels each node with it's grounded acceptance
-grounded = (graph) ->
-    # label all unattacked nodes in
-    # extendin
-    # extendout
-    # examine each out node.  If an out node's attackers are all out and each of their attackers are in, then label in.
-    # repeat until there are no more nodes to do this to.
-    attacks = [graph.nodes.length]
-    for node, nodeIdx in graph.nodes
-        attacks[nodeIdx] = []
-        for edge in graph.edges
-            if edge.to is nodeIdx
-                attacks[nodeIdx].push edge.from
-    for node, nodeIdx in graph.nodes
-        node.grounded = attacks[nodeIdx].length is 0
-
 root = exports ? window
-root.grounded = grounded
 root.graphToAF = graphToAF
 root.ArgumentFramework = ArgumentFramework

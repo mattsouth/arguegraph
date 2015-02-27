@@ -46,8 +46,12 @@ describe 'Argument Framework', ->
         basic.isAdmissible(['0','2']).should.be.true
         basic.isComplete(['0','2']).should.be.true
         basic.isStable(['0','2']).should.be.true
+        basic.grounded().should.have.length 2
+        basic.grounded().should.include '0'
+        basic.grounded().should.include '2'
         done()
 
+###
 suite = describe 'Grounded Semantics', ->
     before (done) ->
         for test in Tests
@@ -64,4 +68,4 @@ suite = describe 'Grounded Semantics', ->
     # todo: replace with something sensible
     it 'dummy', ->
         true.should.true
-    
+###    

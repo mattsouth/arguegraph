@@ -10,8 +10,7 @@
         "coffee-script" :   "*",
         "mocha" :           "*",
         "chai" :            "*",
-        "vis" :             "*",
-        "async" :            "*"
+        "async" :           "*"
     },
     "scripts": {
         "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
