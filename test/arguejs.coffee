@@ -3,13 +3,6 @@ Arguejs = require '../src/arguejs'
 Async = require 'async'
 Mocha = require 'mocha'
 
-# generate ArgumentFramework From parseInformal graph
-graphToAF = (graph) ->
-    map = {}
-    map[arg.id] = [] for arg in graph.nodes
-    map[attack.to].push(attack.from.toString()) for attack in graph.edges
-    new Arguejs.ArgumentFramework(map)
-
 describe 'Argument Framework', ->
     it 'single argument', (done) ->
         trivial = new Arguejs.ArgumentFramework { '0' : [] }

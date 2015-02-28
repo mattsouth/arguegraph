@@ -1,36 +1,36 @@
 class ArgumentFramework
-    # attackermap: object that maps argument ids to arrays of attacking argument ids
-    constructor: (@attackermap={}) ->
-        @argids = Object.keys(@attackermap) # cache of arg ids
-        # check that each member of @attackermap maps to an array that may or may not be empty and only contains members of @argids
+    # defeatermap: object that maps argument ids to arrays of defeating argument ids
+    constructor: (@defeatermap={}) ->
+        @argids = Object.keys(@defeatermap) # cache of arg ids
+        # check that each member of @defeatermap maps to an array that may or may not be empty and only contains members of @argids
         for arg in @argids
-            unless Array.isArray(@attackermap[arg])
-                throw new Error("@attackermap[#{arg}] isnt an array.  @attackermap must contain arrays.")
-            for attacker in @attackermap[arg]
-                unless attacker in @argids
-                    throw new Error("#{attacker} - unknown @attackermap attacker of #{arg}.")
+            unless Array.isArray(@defeatermap[arg])
+                throw new Error("@defeatermap[#{arg}] isnt an array.  @defeatermap must contain arrays.")
+            for defeater in @defeatermap[arg]
+                unless defeater in @argids
+                    throw new Error("#{defeater} - unknown @defeatermap defeater of #{arg}.")
 
     # arg: member of @argids
     # args: subset of @argids
-    # returns true if arg is attacked by a member of args
-    isAttacked: (arg, args) ->
-        for possibleattacker in args
-            return true if possibleattacker in @attackermap[arg]
+    # returns true if arg is defeated by a member of args
+    isDefeated: (arg, args) ->
+        for possibledefeater in args
+            return true if possibledefeater in @defeatermap[arg]
         false
 
     # args: subset of @argids
-    # returns true if no member of args attacks another member of args
+    # returns true if no member of args defeats another member of args
     isConflictFree: (args) ->
         for target in args
-            return false if @isAttacked target, args
+            return false if @isDefeated target, args
         true
 
     # arg: member of @argids
     # args: subset of @argids
-    # returns true if all attackers of arg are defended by args
+    # returns true if all defeaters of arg are defended by args
     isAcceptable: (arg, args) ->
-        for attacker in @attackermap[arg]
-            return false unless @isAttacked(attacker, args)
+        for defeater in @defeatermap[arg]
+            return false unless @isDefeated(defeater, args)
         return true
 
     # args: subset of @argids
@@ -46,15 +46,15 @@ class ArgumentFramework
         @isAdmissible(args)
 
     # args: subset of @argids
-    # returns true if args is conflict free and every argument not in args is attacked by a member of args
+    # returns true if args is conflict free and every argument not in args is defeated by a member of args
     isStable: (args) ->
         for other in complement(args, @argids)
-            return false unless @isAttacked(other, args)
+            return false unless @isDefeated(other, args)
         @isConflictFree(args)
 
     # returns set of accepted argument ids under grounded semantics
     grounded: ->
-        label_in = (arg for arg in @argids when @attackermap[arg].length==0)
+        label_in = (arg for arg in @argids when @defeatermap[arg].length==0)
         label_out = []
         extendinout = () =>
             result = false
@@ -62,12 +62,12 @@ class ArgumentFramework
             others = complement(union, @argids)
             # extendin
             for arg in others
-                if @isAttacked(arg, label_out)
+                if @isDefeated(arg, label_out)
                     label_in.push arg
                     result = true
             # extendout
             for arg in others
-                if @isAttacked(arg, label_in)
+                if @isDefeated(arg, label_in)
                     label_out.push arg
                     result = true
             extendinout() if result

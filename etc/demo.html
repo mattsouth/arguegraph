@@ -77,8 +77,8 @@ function updateArgument(data, callback) {
 }
 
 function clearArguments() {
-  window.network.nodes.clear();
-  window.network.edges.clear();
+  window.network.edgesData.clear();
+  window.network.nodesData.clear();
   counter = 1;
   window.network._unselectAll(false);
 }
