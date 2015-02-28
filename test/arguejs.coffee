@@ -1,14 +1,11 @@
 should = require('chai').should()
 Arguejs = require '../src/arguejs'
-Parser = require '../src/informal'
-Tests = require './test'
 Async = require 'async'
 Mocha = require 'mocha'
 
 describe 'Argument Framework', ->
     it 'single argument', (done) ->
-        # trivial = new Arguejs.ArgumentFramework { '0' : [] }
-        trivial = Arguejs.graphToAF Parser.parseInformal "a"
+        trivial = new Arguejs.ArgumentFramework { '0' : [] }
         trivial.isConflictFree([]).should.be.true
         trivial.isConflictFree(['0']).should.be.true
         trivial.isAcceptable('0', []).should.be.true
@@ -17,9 +14,8 @@ describe 'Argument Framework', ->
         trivial.isStable(['0']).should.be.true
         done()
 
-    it 'self attacking argument', (done) ->
-        # depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
-        depressed = Arguejs.graphToAF Parser.parseInformal "a a"
+    it 'self defeating argument', (done) ->
+        depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
         depressed.isConflictFree(['0']).should.be.false
         depressed.isAcceptable('0', ['0']).should.be.true
         depressed.isAdmissible(['0']).should.be.false
@@ -27,16 +23,14 @@ describe 'Argument Framework', ->
         depressed.isStable(['0']).should.be.false
         done()
 
-    it 'symmetric attack', (done) ->
-        # symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
-        symmetric = Arguejs.graphToAF Parser.parseInformal "a b\\nb a"
+    it 'symmetric defeat', (done) ->
+        symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
         symmetric.isComplete(['0']).should.be.true
         symmetric.isComplete(['1']).should.be.true
         done()
 
     it 'chain of three', (done) ->
-        # basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
-        basic = Arguejs.graphToAF Parser.parseInformal "a b\\nb c"
+        basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
         basic.isConflictFree(['0']).should.be.true
         basic.isConflictFree(['0','1']).should.be.false
         basic.isConflictFree(['0','2']).should.be.true
@@ -46,22 +40,14 @@ describe 'Argument Framework', ->
         basic.isAdmissible(['0','2']).should.be.true
         basic.isComplete(['0','2']).should.be.true
         basic.isStable(['0','2']).should.be.true
+        basic.grounded().should.have.length 2
+        basic.grounded().should.include '0'
+        basic.grounded().should.include '2'
         done()
 
-suite = describe 'Grounded Semantics', ->
-    before (done) ->
-        for test in Tests
-            do (test) ->
-                suite.addTest new Mocha.Test test.name, ->
-                    graph = Parser.parseInformal test.graph
-                    Arguejs.grounded graph
-                    for own key, val of test.grounded
-                        match = node for node in graph.nodes when node.label is key
-                        match.grounded.should.equal val
-        done()                   
-    
-    # dummy test needed by mocha to see dynamic tests.
-    # todo: replace with something sensible
-    it 'dummy', ->
-        true.should.true
-    
+    it 'tree with cross defeat', (done) ->
+        af = new Arguejs.ArgumentFramework { '0' : [], '1' : ['0'], '2' : ['1','3'], '3': ['1'] }
+        af.grounded().should.have.length 2
+        af.grounded().should.include '0'
+        af.grounded().should.include '3'
+        done()
