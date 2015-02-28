@@ -4,7 +4,6 @@ Arguejs
 Abstract Argumentation library for use in nodejs or on the web.
 
 TODO:
-* update demo text (e.g. Add Argument, Add Defeat ...), add fixed visjs
 * Handle text arguments more elgantly in UI
 * revise visual indications of accepted/not
 * Generate all complete labellings

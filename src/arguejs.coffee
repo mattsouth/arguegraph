@@ -54,7 +54,7 @@ class ArgumentFramework
 
     # returns set of accepted argument ids under grounded semantics
     grounded: ->
-        label_in = (arg for arg in @argids when @defeatermap[arg].length==0)
+        label_in = []
         label_out = []
         extendinout = () =>
             result = false
@@ -62,9 +62,11 @@ class ArgumentFramework
             others = complement(union, @argids)
             # extendin
             for arg in others
-                if @isDefeated(arg, label_out)
-                    label_in.push arg
-                    result = true
+                # add arg to label_in if all it's defeaters are out (or it has no defeaters)
+                tobeadded = true
+                for defeater in @defeatermap[arg]
+                    tobeadded=false if defeater not in label_out
+                label_in.push arg if tobeadded 
             # extendout
             for arg in others
                 if @isDefeated(arg, label_in)

@@ -62,7 +62,7 @@ function getNextLabel() {
 
 function addArgument() {
   var input = $('#argumentText');
-  window.network.nodes.add({id: window.network.nodes.length, label: input.val()});
+  window.network.nodesData.add({id: window.network.nodesData.length, label: input.val()});
   input.val(null);
 }
 

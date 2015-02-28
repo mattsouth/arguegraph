@@ -14,7 +14,7 @@ describe 'Argument Framework', ->
         trivial.isStable(['0']).should.be.true
         done()
 
-    it 'self attacking argument', (done) ->
+    it 'self defeating argument', (done) ->
         depressed = new Arguejs.ArgumentFramework { '0' : ['0'] }
         depressed.isConflictFree(['0']).should.be.false
         depressed.isAcceptable('0', ['0']).should.be.true
@@ -23,7 +23,7 @@ describe 'Argument Framework', ->
         depressed.isStable(['0']).should.be.false
         done()
 
-    it 'symmetric attack', (done) ->
+    it 'symmetric defeat', (done) ->
         symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
         symmetric.isComplete(['0']).should.be.true
         symmetric.isComplete(['1']).should.be.true
@@ -43,4 +43,11 @@ describe 'Argument Framework', ->
         basic.grounded().should.have.length 2
         basic.grounded().should.include '0'
         basic.grounded().should.include '2'
+        done()
+
+    it 'tree with cross defeat', (done) ->
+        af = new Arguejs.ArgumentFramework { '0' : [], '1' : ['0'], '2' : ['1','3'], '3': ['1'] }
+        af.grounded().should.have.length 2
+        af.grounded().should.include '0'
+        af.grounded().should.include '3'
         done()
