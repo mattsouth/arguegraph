@@ -4,8 +4,8 @@
   <title>Arguejs | Demo</title>
 	<link rel="stylesheet" href="/etc/css/normalize.css">
 	<link rel="stylesheet" href="/etc/css/skeleton.css">
-  <link rel="stylesheet" href="/etc/vis.css">
-  <script type="text/javascript" src="vis.js"></script>
+  <link rel="stylesheet" href="/etc/vis.min.css">
+  <script type="text/javascript" src="vis-custom.min.js"></script>
   <script type="text/javascript" src="../src/arguejs.js"></script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
   <style>
@@ -97,7 +97,7 @@ function graphToAF(graph) {
 function labelArguments() {
   var grounded = graphToAF(window.network).grounded();
   window.network.nodesData.forEach(function(node) {
-    if (grounded.indexOf(node.id)>-1) {
+    if (grounded.indexOf(node.id.toString())>-1) {
       node.color='yellow';
     } else {
       node.color='red';
