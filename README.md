@@ -3,6 +3,8 @@ Arguejs
 
 Abstract Argumentation library for use in nodejs or on the web.
 
+[Demo](http://mattsouth.github.io/arguejs/demo.html) - create an argument framework and see the accepted state of nodes (arguments) in the network (yellow arguments are accepted).
+
 TODO:
 * Handle text arguments more elgantly in UI
 * revise visual indications of accepted/not
