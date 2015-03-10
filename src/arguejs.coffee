@@ -52,6 +52,21 @@ class ArgumentFramework
             return false unless @isDefeated(other, args)
         @isConflictFree(args)
 
+    # args: subset of @argids
+    # returns true if args is admissible and there are no more arguments that can be added that would maintain it's admissiblity
+    isPreferred: (args) ->
+        # TODO
+
+    # args: subset of @argids
+    # returns true if
+    isSemiStable: (args) ->
+        # TODO
+
+    # args: subset of @argids
+    # returns true if
+    isIdeal: (args) ->
+        # TODO 
+
     # returns set of accepted argument ids under grounded semantics
     grounded: ->
         label_in = []
@@ -61,13 +76,20 @@ class ArgumentFramework
             union = label_in.concat label_out
             others = complement(union, @argids)
             # extendin
+            added = []
             for arg in others
                 # add arg to label_in if all it's defeaters are out (or it has no defeaters)
                 tobeadded = true
                 for defeater in @defeatermap[arg]
-                    tobeadded=false if defeater not in label_out
-                label_in.push arg if tobeadded 
+                    if defeater not in label_out
+                        tobeadded=false 
+                        break
+                if tobeadded
+                    added.push arg
+                    label_in.push arg
+                    result=true 
             # extendout
+            others = complement(added, others) if added isnt []
             for arg in others
                 if @isDefeated(arg, label_in)
                     label_out.push arg
