@@ -1,3 +1,13 @@
+class Labelling
+    constructor: (@in=[], @out=[], @undec=[]) ->
+        # todo: check the @in, @out and @undec are disjoint
+    equals: (labelling) ->
+        arrtest = (arr1, arr2) ->
+            arr1.length is arr2.length and arr1[idx] is val for val, idx in arr2 
+        arrtest(@in.sort(), labelling.in.sort()) and 
+            arrtest(@out.sort(), labelling.out.sort()) and 
+            arrtest(@undec.sort(), labelling.undec.sort())
+
 class ArgumentFramework
     # defeatermap: object that maps argument ids to arrays of defeating argument ids
     constructor: (@defeatermap={}) ->
@@ -51,6 +61,24 @@ class ArgumentFramework
         for other in complement(args, @argids)
             return false unless @isDefeated(other, args)
         @isConflictFree(args)
+
+    # returns true if every argument is labelled and the labelling obeys the rules:
+    # 1. all defeaters of an "in" argument are labelled "out"
+    # 2. at least one defeater of an "out" argument is labelled "in"
+    # 3. there are no "undec" arguments that have no attackers (they should be "in")
+    isCompleteLabelling: (labelling) ->
+        return false unless labelling.in.length + labelling.out.length + labelling.undec.length is @argids.length
+        for arg in labelling.in
+            for defeater in @defeatermap[arg]
+                return false unless defeater in labelling.out
+        for arg in labelling.out
+            ok = false
+            for defeater in @defeatermap[arg]
+                ok = true if defeater in labelling.in
+            return false unless ok
+        for arg in labelling.undec
+            return false unless @defeatermap[arg].length > 0
+        return true
 
     # args: subset of @argids
     # returns true if args is admissible and there are no more arguments that can be added that would maintain it's admissiblity
@@ -110,3 +138,4 @@ complement = (A, B) ->
 
 root = exports ? window
 root.ArgumentFramework = ArgumentFramework
+root.Labelling = Labelling

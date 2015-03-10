@@ -51,3 +51,19 @@ describe 'Argument Framework', ->
         af.grounded().should.include '0'
         af.grounded().should.include '3'
         done()
+
+describe 'Labelling', ->
+    it 'isCompleteLabelling', (done) ->
+        symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
+        # catch labelling with missing arguments
+        symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],[],[])).should.be.false
+        # expected labellings
+        symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],['1'],[])).should.be.true
+        symmetric.isCompleteLabelling(new Arguejs.Labelling(['1'],['0'],[])).should.be.true
+        symmetric.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1'])).should.be.true
+        basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
+        # check that the label undec doesnt serve as a wildcard
+        basic.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1','2'])).should.be.false
+        # expected labelling
+        basic.isCompleteLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
+        done()
