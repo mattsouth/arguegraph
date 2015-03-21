@@ -80,6 +80,9 @@ class ArgumentFramework
             return false unless @defeatermap[arg].length > 0
         return true
 
+    completeLabellings: () ->
+        return []
+        
     # args: subset of @argids
     # returns true if args is admissible and there are no more arguments that can be added that would maintain it's admissiblity
     isPreferred: (args) ->
