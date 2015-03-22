@@ -1,12 +1,24 @@
+# todo: sort arrays on construction?
 class Labelling
     constructor: (@in=[], @out=[], @undec=[]) ->
-        # todo: check the @in, @out and @undec are disjoint
+        # todo: check that @in, @out and @undec are disjoint
+
+    # returns true if labelling is the same as this
     equals: (labelling) ->
         arrtest = (arr1, arr2) ->
             arr1.length is arr2.length and arr1[idx] is val for val, idx in arr2 
         arrtest(@in.sort(), labelling.in.sort()) and 
             arrtest(@out.sort(), labelling.out.sort()) and 
             arrtest(@undec.sort(), labelling.undec.sort())
+
+    # returns complement of all labelling args and passed array of args
+    complement: (args) ->
+        return complement @undec, complement @out, complement @in, args
+
+    # returns copy of this labelling
+    clone: () ->
+        # note that .slice(0) creates shallow clone of array
+        return new Labelling(@in.slice(0),@out.slice(0),@undec.slice(0))
 
 class ArgumentFramework
     # defeatermap: object that maps argument ids to arrays of defeating argument ids
@@ -27,6 +39,14 @@ class ArgumentFramework
         for possibledefeater in args
             return true if possibledefeater in @defeatermap[arg]
         false
+
+    # arg: member of @argids
+    # args: subset of @argids
+    # returns true if arg is defeated by all members of args
+    isDefeatedByAll: (arg, args) ->
+        for possibledefeater in args
+            return false if not possibledefeater in @defeatermap[arg]
+        true
 
     # args: subset of @argids
     # returns true if no member of args defeats another member of args
@@ -88,54 +108,45 @@ class ArgumentFramework
             return false unless ok
         return true
 
-    completeLabellings: () ->
-        return []
-        
-    # args: subset of @argids
-    # returns true if args is admissible and there are no more arguments that can be added that would maintain it's admissiblity
-    isPreferred: (args) ->
-        # TODO
+# abstract class to be extended by particular reasoners
+class Reasoner
+    constructor: (@af) ->
 
-    # args: subset of @argids
-    # returns true if
-    isSemiStable: (args) ->
-        # TODO
+    # returns an array of extensions (arrays of arguments) that reasoner generates
+    extensions: () ->
+        labelling.in for labelling in @labellings()
 
-    # args: subset of @argids
-    # returns true if
-    isIdeal: (args) ->
-        # TODO 
-
-    # returns set of accepted argument ids under grounded semantics
-    grounded: ->
-        label_in = []
-        label_out = []
+# the most sceptical of all reasoners
+class GroundedReasoner extends Reasoner
+    # grounded reasoner returns a single labelling
+    labellings: () ->
+        labelling = new Labelling()
         extendinout = () =>
             result = false
-            union = label_in.concat label_out
-            others = complement(union, @argids)
-            # extendin
+            others = labelling.complement @af.argids
             added = []
+            # extendin
             for arg in others
                 # add arg to label_in if all it's defeaters are out (or it has no defeaters)
                 tobeadded = true
-                for defeater in @defeatermap[arg]
-                    if defeater not in label_out
-                        tobeadded=false 
+                for defeater in @af.defeatermap[arg]
+                    if defeater not in labelling.out
+                        tobeadded=false
                         break
                 if tobeadded
                     added.push arg
-                    label_in.push arg
-                    result=true 
+                    labelling.in.push arg
+                    result=true
             # extendout
             others = complement(added, others) if added isnt []
             for arg in others
-                if @isDefeated(arg, label_in)
-                    label_out.push arg
+                if @af.isDefeated(arg, labelling.in)
+                    labelling.out.push arg
                     result = true
             extendinout() if result
         extendinout()
-        label_in
+        labelling.undec = labelling.complement @af.argids
+        return [labelling]
 
 # the set of all subsets of S, see https://gist.github.com/joyrexus/5423644
 powerset = (S) ->
@@ -148,5 +159,6 @@ complement = (A, B) ->
     (el for el in B when el not in A)
 
 root = exports ? window
-root.ArgumentFramework = ArgumentFramework
 root.Labelling = Labelling
+root.ArgumentFramework = ArgumentFramework
+root.GroundedReasoner = GroundedReasoner

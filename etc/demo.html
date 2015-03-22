@@ -95,7 +95,7 @@ function graphToAF(graph) {
 }
 
 function labelArguments() {
-  var grounded = graphToAF(window.network).grounded();
+  var grounded = new GroundedReasoner(graphToAF(window.network)).extensions()[0];
   window.network.nodesData.forEach(function(node) {
     if (grounded.indexOf(node.id.toString())>-1) {
       node.color='yellow';

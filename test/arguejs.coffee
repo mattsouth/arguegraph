@@ -40,16 +40,6 @@ describe 'Argument Framework', ->
         basic.isAdmissible(['0','2']).should.be.true
         basic.isComplete(['0','2']).should.be.true
         basic.isStable(['0','2']).should.be.true
-        basic.grounded().should.have.length 2
-        basic.grounded().should.include '0'
-        basic.grounded().should.include '2'
-        done()
-
-    it 'tree with cross defeat', (done) ->
-        af = new Arguejs.ArgumentFramework { '0' : [], '1' : ['0'], '2' : ['1','3'], '3': ['1'] }
-        af.grounded().should.have.length 2
-        af.grounded().should.include '0'
-        af.grounded().should.include '3'
         done()
 
 describe 'Labelling', ->
@@ -63,6 +53,7 @@ describe 'Labelling', ->
             symmetric.isLegalLabelling(new Arguejs.Labelling(['1'],['0'],[])).should.be.true
             symmetric.isLegalLabelling(new Arguejs.Labelling([],[],['0','1'])).should.be.true
             done()
+
         it 'chain of three', (done) ->
             basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
             # check that the label undec doesnt serve as a wildcard
@@ -70,6 +61,7 @@ describe 'Labelling', ->
             # check expected labelling
             basic.isLegalLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
             done()
+
     describe.skip 'Generation', ->
         it 'basic', (done) ->
             af = new Arguejs.ArgumentFramework { 'A' : [], 'B' : ['A'] }
@@ -77,6 +69,7 @@ describe 'Labelling', ->
             labellings.should.have.length 1
             labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
             done()
+
         it 'symmetric defeat', (done) ->
             af = new Arguejs.ArgumentFramework { 'A' : ['B'], 'B' : ['A'] }
             labellings = af.completeLabellings()
@@ -84,7 +77,8 @@ describe 'Labelling', ->
             labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
             labellings.should.include new Arguejs.Labelling(['B'],['A'],[])
             labellings.should.include new Arguejs.Labelling([],[],['A','B'])
-            done()            
+            done()     
+
         it 'canonical', (done) ->
             af = new Arguejs.ArgumentFramework { 'A' : [], 'B' : ['A'], 'C' : ['B','D'], 'D' : ['C'], 'E': ['D'] }
             labellings = af.completeLabellings()
@@ -92,3 +86,22 @@ describe 'Labelling', ->
             labellings.should.include new Arguejs.Labelling(['A'],['B'],['C','D','E'])
             labellings.should.include new Arguejs.Labelling(['A','C','E'],['B','D'],[])
             done()
+
+describe 'Grounded reasoner', ->
+    it 'chain of three', (done) ->
+        basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
+        reasoner = new Arguejs.GroundedReasoner(basic)
+        extension = reasoner.extensions()[0]
+        extension.should.have.length 2
+        extension.should.include '0'
+        extension.should.include '2'
+        done()
+
+    it 'tree with cross defeat', (done) ->
+        af = new Arguejs.ArgumentFramework { '0' : [], '1' : ['0'], '2' : ['1','3'], '3': ['1'] }
+        reasoner = new Arguejs.GroundedReasoner(af)
+        extension = reasoner.extensions()[0]
+        extension.should.have.length 2
+        extension.should.include '0'
+        extension.should.include '3'
+        done()
