@@ -58,7 +58,7 @@ describe 'Labelling', ->
             symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
             # catch labelling with missing arguments
             symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],[],[])).should.be.false
-            # expected labellings
+            # check expected labellings
             symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],['1'],[])).should.be.true
             symmetric.isCompleteLabelling(new Arguejs.Labelling(['1'],['0'],[])).should.be.true
             symmetric.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1'])).should.be.true
@@ -67,14 +67,28 @@ describe 'Labelling', ->
             basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
             # check that the label undec doesnt serve as a wildcard
             basic.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1','2'])).should.be.false
-            # expected labelling
+            # check expected labelling
             basic.isCompleteLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
             done()
-    describe 'Generation', ->
+    describe.skip 'Generation', ->
+        it 'basic', (done) ->
+            af = new Arguejs.ArgumentFramework { 'A' : [], 'B' : ['A'] }
+            labellings = af.completeLabellings()
+            labellings.should.have.length 1
+            labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
+            done()
+        it 'symmetric defeat', (done) ->
+            af = new Arguejs.ArgumentFramework { 'A' : ['B'], 'B' : ['A'] }
+            labellings = af.completeLabellings()
+            labellings.should.have.length 3
+            labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
+            labellings.should.include new Arguejs.Labelling(['B'],['A'],[])
+            labellings.should.include new Arguejs.Labelling([],[],['A','B'])
+            done()            
         it 'canonical', (done) ->
             af = new Arguejs.ArgumentFramework { 'A' : [], 'B' : ['A'], 'C' : ['B','D'], 'D' : ['C'], 'E': ['D'] }
             labellings = af.completeLabellings()
             labellings.should.have.length 2
-            #labellings.should.include new Arguejs.Labelling(['A'],['B'],['C','D','E'])
-            #labellings.should.include new Arguejs.Labelling(['A','C','E'],['B','D'],[])
+            labellings.should.include new Arguejs.Labelling(['A'],['B'],['C','D','E'])
+            labellings.should.include new Arguejs.Labelling(['A','C','E'],['B','D'],[])
             done()
