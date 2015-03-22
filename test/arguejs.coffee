@@ -53,22 +53,22 @@ describe 'Argument Framework', ->
         done()
 
 describe 'Labelling', ->
-    describe 'Validation', ->
+    describe 'Legality', ->
         it 'symmetric defeat', (done) ->
             symmetric = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['0'] }
             # catch labelling with missing arguments
-            symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],[],[])).should.be.false
+            symmetric.isLegalLabelling(new Arguejs.Labelling(['0'],[],[])).should.be.false
             # check expected labellings
-            symmetric.isCompleteLabelling(new Arguejs.Labelling(['0'],['1'],[])).should.be.true
-            symmetric.isCompleteLabelling(new Arguejs.Labelling(['1'],['0'],[])).should.be.true
-            symmetric.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1'])).should.be.true
+            symmetric.isLegalLabelling(new Arguejs.Labelling(['0'],['1'],[])).should.be.true
+            symmetric.isLegalLabelling(new Arguejs.Labelling(['1'],['0'],[])).should.be.true
+            symmetric.isLegalLabelling(new Arguejs.Labelling([],[],['0','1'])).should.be.true
             done()
         it 'chain of three', (done) ->
             basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
             # check that the label undec doesnt serve as a wildcard
-            basic.isCompleteLabelling(new Arguejs.Labelling([],[],['0','1','2'])).should.be.false
+            basic.isLegalLabelling(new Arguejs.Labelling([],[],['0','1','2'])).should.be.false
             # check expected labelling
-            basic.isCompleteLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
+            basic.isLegalLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
             done()
     describe.skip 'Generation', ->
         it 'basic', (done) ->

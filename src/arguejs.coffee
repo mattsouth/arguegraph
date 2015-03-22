@@ -65,19 +65,27 @@ class ArgumentFramework
     # returns true if every argument is labelled and the labelling obeys the rules:
     # 1. all defeaters of an "in" argument are labelled "out"
     # 2. at least one defeater of an "out" argument is labelled "in"
-    # 3. there are no "undec" arguments that have no attackers (they should be "in")
-    isCompleteLabelling: (labelling) ->
+    # 3. at least one defeater of an "undec" argument is also labelled "undec" and no defeaters of an "undec" argument are labelled "in"
+    isLegalLabelling: (labelling) ->
         return false unless labelling.in.length + labelling.out.length + labelling.undec.length is @argids.length
+        # todo: check for label dups
         for arg in labelling.in
             for defeater in @defeatermap[arg]
                 return false unless defeater in labelling.out
         for arg in labelling.out
             ok = false
             for defeater in @defeatermap[arg]
-                ok = true if defeater in labelling.in
+                if defeater in labelling.in
+                    ok = true
+                    break
             return false unless ok
         for arg in labelling.undec
             return false unless @defeatermap[arg].length > 0
+            ok = false
+            for defeater in @defeatermap[arg]
+                return false if defeater in labelling.in
+                ok = true if defeater in labelling.undec
+            return false unless ok
         return true
 
     completeLabellings: () ->
