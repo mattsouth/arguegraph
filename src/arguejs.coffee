@@ -1,25 +1,3 @@
-# todo: sort arrays on construction?
-class Labelling
-    constructor: (@in=[], @out=[], @undec=[]) ->
-        # todo: check that @in, @out and @undec are disjoint
-
-    # returns true if labelling is the same as this
-    equals: (labelling) ->
-        arrtest = (arr1, arr2) ->
-            arr1.length is arr2.length and arr1[idx] is val for val, idx in arr2 
-        arrtest(@in.sort(), labelling.in.sort()) and 
-            arrtest(@out.sort(), labelling.out.sort()) and 
-            arrtest(@undec.sort(), labelling.undec.sort())
-
-    # returns complement of all labelling args and passed array of args
-    complement: (args) ->
-        return complement @undec, complement @out, complement @in, args
-
-    # returns copy of this labelling
-    clone: () ->
-        # note that .slice(0) creates shallow clone of array
-        return new Labelling(@in.slice(0),@out.slice(0),@undec.slice(0))
-
 class ArgumentFramework
     # defeatermap: object that maps argument ids to arrays of defeating argument ids
     constructor: (@defeatermap={}) ->
@@ -39,14 +17,6 @@ class ArgumentFramework
         for possibledefeater in args
             return true if possibledefeater in @defeatermap[arg]
         false
-
-    # arg: member of @argids
-    # args: subset of @argids
-    # returns true if arg is defeated by all members of args
-    isDefeatedByAll: (arg, args) ->
-        for possibledefeater in args
-            return false if not possibledefeater in @defeatermap[arg]
-        true
 
     # args: subset of @argids
     # returns true if no member of args defeats another member of args
@@ -87,8 +57,8 @@ class ArgumentFramework
     # 2. at least one defeater of an "out" argument is labelled "in"
     # 3. at least one defeater of an "undec" argument is also labelled "undec" and no defeaters of an "undec" argument are labelled "in"
     isLegalLabelling: (labelling) ->
-        return false unless labelling.in.length + labelling.out.length + labelling.undec.length is @argids.length
-        # todo: check for label dups
+        # check that label spans this AF
+        return false unless labelling.complement(@argids).length is 0
         for arg in labelling.in
             for defeater in @defeatermap[arg]
                 return false unless defeater in labelling.out
@@ -108,6 +78,34 @@ class ArgumentFramework
             return false unless ok
         return true
 
+class Labelling
+    constructor: (@in=[], @out=[], @undec=[]) ->
+        # todo: sort arrays on construction? (not unless you can sort on insertion)
+        # check that @in, @out and @undec are disjoint
+        if intersection(@in, @out).length>0 
+            throw new Error('invalid labelling - dup found in in/out')
+        if intersection(@in, @undec).length>0
+            throw new Error('invalid labelling - dup found in in/undec')
+        if intersection(@out, @undec).length>0
+            throw new Error('invalid labelling - dup found in out/undec')
+            
+    # returns true if labelling is the same as this
+    equals: (labelling) ->
+        arrtest = (arr1, arr2) ->
+            arr1.length is arr2.length and arr1[idx] is val for val, idx in arr2 
+        arrtest(@in.sort(), labelling.in.sort()) and 
+            arrtest(@out.sort(), labelling.out.sort()) and 
+            arrtest(@undec.sort(), labelling.undec.sort())
+
+    # returns complement array of the passed array of args and the array of all labelled args
+    complement: (args) ->
+        return complement @undec, complement @out, complement @in, args
+
+    # returns copy of this labelling
+    clone: () ->
+        # note that .slice(0) creates shallow clone of array
+        return new Labelling(@in.slice(0),@out.slice(0),@undec.slice(0))
+
 # abstract class to be extended by particular reasoners
 class Reasoner
     constructor: (@af) ->
@@ -122,41 +120,48 @@ class GroundedReasoner extends Reasoner
     labellings: () ->
         labelling = new Labelling()
         extendinout = () =>
-            result = false
             others = labelling.complement @af.argids
             added = []
             # extendin
             for arg in others
-                # add arg to label_in if all it's defeaters are out (or it has no defeaters)
-                tobeadded = true
-                for defeater in @af.defeatermap[arg]
-                    if defeater not in labelling.out
-                        tobeadded=false
-                        break
-                if tobeadded
+                # label arg 'in' if all it's defeaters are labelled 'out' (or it has no defeaters)
+                if isSubset @af.defeatermap[arg], labelling.out
                     added.push arg
                     labelling.in.push arg
-                    result=true
             # extendout
-            others = complement(added, others) if added isnt []
+            others = complement(added, others) if added.length>0
             for arg in others
+                # label arg 'out' if one of it's defeaters is labelled 'in'
                 if @af.isDefeated(arg, labelling.in)
                     labelling.out.push arg
-                    result = true
-            extendinout() if result
+                    added.push arg
+            extendinout() if added.length>0
         extendinout()
         labelling.undec = labelling.complement @af.argids
         return [labelling]
-
-# the set of all subsets of S, see https://gist.github.com/joyrexus/5423644
+        
+# returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
 powerset = (S) ->
     P = [[]]
     P.push P[j].concat S[i] for j of P for i of S
     P
 
-# the set of members of B who are not members of A
+# returns an array whose elements are elements of array B which are not members of array A
 complement = (A, B) ->
     (el for el in B when el not in A)
+
+# returns true if all elements of array A are members of array B
+isSubset = (A, B) ->
+    for el in A
+        return false if not (el in B)
+    return true
+
+# returns an array whose elements are in both arrays A and B
+intersection = (A, B) ->
+    result = []
+    for el in A
+        result.push el if el in B
+    result
 
 root = exports ? window
 root.Labelling = Labelling
