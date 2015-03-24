@@ -18,6 +18,11 @@ class ArgumentFramework
             return true if possibledefeater in @defeatermap[arg]
         false
 
+    # arg: member of @argids
+    # returns array of arguments defeated by passed argument
+    defeatedBy: (arg) ->
+        defeated for defeated in @argids when arg in @defeatermap[defeated] 
+
     # args: subset of @argids
     # returns true if no member of args defeats another member of args
     isConflictFree: (args) ->
@@ -92,10 +97,11 @@ class Labelling
     # returns true if labelling is the same as this
     equals: (labelling) ->
         arrtest = (arr1, arr2) ->
-            arr1.length is arr2.length and arr1[idx] is val for val, idx in arr2 
-        arrtest(@in.sort(), labelling.in.sort()) and 
+            arr1.length is arr2.length and arr1.every (el, idx) -> arr2[idx] is el 
+        result = arrtest(@in.sort(), labelling.in.sort()) and 
             arrtest(@out.sort(), labelling.out.sort()) and 
             arrtest(@undec.sort(), labelling.undec.sort())
+        result
 
     # returns complement array of the passed array of args and the array of all labelled args
     complement: (args) ->
@@ -105,6 +111,23 @@ class Labelling
     clone: () ->
         # note that .slice(0) creates shallow clone of array
         return new Labelling(@in.slice(0),@out.slice(0),@undec.slice(0))
+
+    # to be legal, all defeaters of an "in" argument must be labelled "out"
+    # returns array of illegally in labelled arguments
+    illegallyIn: (af) ->
+        arg for arg in @in when not isSubset af.defeatermap[arg], @out
+
+    # to be legal at least one defeater of an "out" argument must be labelled "in"
+    # returns array of illegally out labelled arguments
+    illegallyOut: (af) ->
+        arg for arg in @out when intersection(af.defeatermap[arg], @in).length==0
+
+    # move arg from one label to another
+    # returns updated labelling
+    move: (arg, from, to) ->
+        @[from].splice(@[from].indexOf(arg), 1)
+        @[to].push arg
+        @
 
 # abstract class to be extended by particular reasoners
 class Reasoner
@@ -139,7 +162,54 @@ class GroundedReasoner extends Reasoner
         extendinout()
         labelling.undec = labelling.complement @af.argids
         return [labelling]
-        
+
+class PreferredReasoner extends Reasoner
+    labellings: () ->
+        checkIn = (labelling) =>
+            illegallyIn = (arg) =>
+                for defeater in @af.defeatermap[arg]
+                    return defeater if defeater in labelling.in or defeater in labelling.undec
+                return null
+            result = {superIllegal:[], illegal:[]}
+            for arg in labelling.in
+                defeater = illegallyIn(arg)
+                if defeater?
+                    if illegallyIn(defeater)?
+                        result.illegal.push(arg)
+                    else
+                        result.superIllegal.push(arg)
+            result
+        transitionLabelling = (labelling, arg) =>
+            cloned = labelling.clone()
+            cloned.move arg,'in','out'
+            illegallyOut = cloned.illegallyOut @af#
+            if arg in illegallyOut
+                cloned.move arg, 'out', 'undec'
+            for defeated in @af.defeatedBy(arg)
+                if defeated in illegallyOut
+                    cloned.move defeated, 'out', 'undec'
+            cloned
+        findLabellings = (labelling) =>
+            # todo: check labelling is not worse than an existing labelling
+            illegals = checkIn labelling
+            if illegals.illegal.length>0 or illegals.superIllegal.length>0
+                if illegals.superIllegal.length>0
+                    findLabellings transitionLabelling(labelling, illegals.superIllegal[0])
+                else
+                    for arg in illegals.illegal
+                        findLabellings transitionLabelling(labelling, arg)
+            else
+                # todo: prune existing candidates if necessary
+                ok=true
+                for existing in candidates
+                    if existing.equals labelling
+                        ok = false
+                candidates.push(labelling) unless not ok
+                return           
+        candidates=[]
+        findLabellings new Labelling(@af.argids)
+        candidates
+
 # returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
 powerset = (S) ->
     P = [[]]
@@ -167,3 +237,4 @@ root = exports ? window
 root.Labelling = Labelling
 root.ArgumentFramework = ArgumentFramework
 root.GroundedReasoner = GroundedReasoner
+root.PreferredReasoner = PreferredReasoner

@@ -105,3 +105,31 @@ describe 'Grounded reasoner', ->
         extension.should.include '0'
         extension.should.include '3'
         done()
+
+describe 'Preferred reasoner', ->
+    it 'chain of three', (done) ->
+        basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
+        reasoner = new Arguejs.PreferredReasoner(basic)
+        extension = reasoner.extensions()[0]
+        extension.should.have.length 2
+        extension.should.include '0'
+        extension.should.include '2'
+        done()
+
+    it 'cycle of three', (done) ->
+        cycle = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : ['0'] }
+        reasoner = new Arguejs.PreferredReasoner(cycle)
+        labellings = reasoner.labellings()
+        labellings.should.have.length 1
+        labellings.should.include new Arguejs.Labelling([],[],['0','1','2'])
+        done()
+
+    # todo: should Arguejs.Labelling([],[],['A','B']) be valid here?
+    it 'symmetric defeat', (done) ->
+        af = new Arguejs.ArgumentFramework { 'A' : ['B'], 'B' : ['A'] }
+        reasoner = new Arguejs.PreferredReasoner(af)
+        labellings = reasoner.labellings()
+        labellings.should.have.length 2
+        labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
+        labellings.should.include new Arguejs.Labelling(['B'],['A'],[])
+        done() 
