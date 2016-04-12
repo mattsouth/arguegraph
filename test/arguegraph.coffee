@@ -1,5 +1,5 @@
 should = require('chai').should()
-Arguejs = require '../src/arguejs'
+Arguejs = require '../src/arguegraph'
 Async = require 'async'
 Mocha = require 'mocha'
 
@@ -126,7 +126,6 @@ describe 'Preferred reasoner', ->
     labellings.should.include new Arguejs.Labelling([],[],['0','1','2'])
     done()
 
-  # todo: should Arguejs.Labelling([],[],['A','B']) be valid here?
   it 'symmetric defeat', (done) ->
     af = new Arguejs.ArgumentFramework { 'A' : ['B'], 'B' : ['A'] }
     reasoner = new Arguejs.PreferredReasoner(af)

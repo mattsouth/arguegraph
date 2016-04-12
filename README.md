@@ -1,7 +1,7 @@
-Arguejs
+Arguegraph
 =======
 
-Abstract Argumentation library for use in nodejs or on the web.  Arguejs is a naive, "start from scratch" library built mainly for educational purposes using Martin Caminada's "A Gentle Introduction to Argumentation Semantics" 2008 paper as its primary source.
+Abstract Argumentation library for use in nodejs or on the web.  Arguegraph is a naive, "start from scratch" library built mainly for (my) educational purposes using Martin Caminada's "A Gentle Introduction to Argumentation Semantics" 2008 paper as its primary source.
 
 [Demo](http://mattsouth.github.io/arguejs/demo.html) - create an argument framework and see the accepted state of nodes (arguments) in the network (yellow arguments are accepted).
 

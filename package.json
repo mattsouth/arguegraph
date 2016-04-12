@@ -1,13 +1,19 @@
 {
-    "name" : "arguejs",
-    "version" : "0.0.1",
+    "name" : "arguegraph",
+    "version" : "0.1.0",
     "author" : "Matt South <matt@mattsouth.net>",
     "repository" : {
         "type" : "git",
-        "url" : "https://github.com/mattsouth/arguejs"
+        "url" : "https://github.com/mattsouth/arguegraph"
+    },
+    "license": "MIT",
+    "bugs": {
+      "url": "https://github.com/mattsouth/arguegraph/issues"
     },
     "dependencies" : {
-        "coffee-script" :   "*",
+        "coffee-script" :   "*"
+    },
+    "devDependencies" : {
         "mocha" :           "*",
         "chai" :            "*",
         "async" :           "*"
@@ -15,5 +21,6 @@
     "scripts": {
         "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
         "build": "coffee -c src"
-    }
+    },
+    "main":"src/arguegraph.js"
 }
