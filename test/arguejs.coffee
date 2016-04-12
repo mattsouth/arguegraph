@@ -59,7 +59,7 @@ describe 'Labelling', ->
             # check that the label undec doesnt serve as a wildcard
             basic.isLegalLabelling(new Arguejs.Labelling([],[],['0','1','2'])).should.be.false
             # check expected labelling
-            basic.isLegalLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true        
+            basic.isLegalLabelling(new Arguejs.Labelling(['0','2'],['1'],[])).should.be.true
             done()
 
     describe.skip 'Generation', ->
@@ -77,7 +77,7 @@ describe 'Labelling', ->
             labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
             labellings.should.include new Arguejs.Labelling(['B'],['A'],[])
             labellings.should.include new Arguejs.Labelling([],[],['A','B'])
-            done()     
+            done()
 
         it 'canonical', (done) ->
             af = new Arguejs.ArgumentFramework { 'A' : [], 'B' : ['A'], 'C' : ['B','D'], 'D' : ['C'], 'E': ['D'] }
@@ -91,7 +91,9 @@ describe 'Grounded reasoner', ->
     it 'chain of three', (done) ->
         basic = new Arguejs.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
         reasoner = new Arguejs.GroundedReasoner(basic)
-        extension = reasoner.extensions()[0]
+        extensions = reasoner.extensions()
+        extensions.should.have.length 1 # by definition for this reasoner!
+        extension = extensions[0]
         extension.should.have.length 2
         extension.should.include '0'
         extension.should.include '2'
@@ -132,4 +134,4 @@ describe 'Preferred reasoner', ->
         labellings.should.have.length 2
         labellings.should.include new Arguejs.Labelling(['A'],['B'],[])
         labellings.should.include new Arguejs.Labelling(['B'],['A'],[])
-        done() 
+        done()

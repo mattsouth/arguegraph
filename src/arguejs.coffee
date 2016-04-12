@@ -1,7 +1,36 @@
+# Abstract argumentation is all about manipulating sets of arguments.
+# First we define some set operations on arrays that are assumed not to include dups or gaps.
+
+# Gulp. Yes argumentation, especially this naive library's argumentation can get computationally expensive.
+# returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
+powerset = (S) ->
+    P = [[]]
+    P.push P[j].concat S[i] for j of P for i of S
+    P
+
+# returns an array whose elements are elements of array B which are not members of array A
+complement = (A, B) ->
+    (el for el in B when el not in A)
+
+# returns true if all elements of array A are members of array B
+isSubset = (A, B) ->
+    for el in A
+        return false if not (el in B)
+    return true
+
+# returns an array whose elements are in both arrays A and B
+intersection = (A, B) ->
+    result = []
+    for el in A
+        result.push el if el in B
+    result
+
+# An ArgumentFramework wraps a map of defeats that define the argument network
+# and provides a set of functions for interrogating that network.
 class ArgumentFramework
     # defeatermap: object that maps argument ids to arrays of defeating argument ids
     constructor: (@defeatermap={}) ->
-        @argids = Object.keys(@defeatermap) # cache of arg ids
+        @argids = Object.keys(@defeatermap) # cache of argument ids
         # check that each member of @defeatermap maps to an array that may or may not be empty and only contains members of @argids
         for arg in @argids
             unless Array.isArray(@defeatermap[arg])
@@ -21,7 +50,7 @@ class ArgumentFramework
     # arg: member of @argids
     # returns array of arguments defeated by passed argument
     defeatedBy: (arg) ->
-        defeated for defeated in @argids when arg in @defeatermap[defeated] 
+        defeated for defeated in @argids when arg in @defeatermap[defeated]
 
     # args: subset of @argids
     # returns true if no member of args defeats another member of args
@@ -41,7 +70,7 @@ class ArgumentFramework
     # args: subset of @argids
     # returns true if args is conflict free and each member is acceptable wrt to itself
     isAdmissible: (args) ->
-        @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)    
+        @isConflictFree(args) and args.every (arg) => @isAcceptable(arg, args)
 
     # args: subset of @argids
     # returns true if args is admissible and every acceptable argument wrt to args is in args
@@ -83,23 +112,25 @@ class ArgumentFramework
             return false unless ok
         return true
 
+# A Labelling consists of three mutually distinct argument sets, "in", "out" and "undec"
+# TODO?: Link a Labelling to an ArgumentFramework (thus removing need for parameter in illegallyIn and illegallyOut functions and allowing for possibility of the argument framework changing after labelling was constructed)
 class Labelling
     constructor: (@in=[], @out=[], @undec=[]) ->
         # todo: sort arrays on construction? (not unless you can sort on insertion)
         # check that @in, @out and @undec are disjoint
-        if intersection(@in, @out).length>0 
+        if intersection(@in, @out).length>0
             throw new Error('invalid labelling - dup found in in/out')
         if intersection(@in, @undec).length>0
             throw new Error('invalid labelling - dup found in in/undec')
         if intersection(@out, @undec).length>0
             throw new Error('invalid labelling - dup found in out/undec')
-            
+
     # returns true if labelling is the same as this
     equals: (labelling) ->
         arrtest = (arr1, arr2) ->
-            arr1.length is arr2.length and arr1.every (el, idx) -> arr2[idx] is el 
-        result = arrtest(@in.sort(), labelling.in.sort()) and 
-            arrtest(@out.sort(), labelling.out.sort()) and 
+            arr1.length is arr2.length and arr1.every (el, idx) -> arr2[idx] is el
+        result = arrtest(@in.sort(), labelling.in.sort()) and
+            arrtest(@out.sort(), labelling.out.sort()) and
             arrtest(@undec.sort(), labelling.undec.sort())
         result
 
@@ -112,19 +143,23 @@ class Labelling
         # note that .slice(0) creates shallow clone of array
         return new Labelling(@in.slice(0),@out.slice(0),@undec.slice(0))
 
+    # Check legality of "in" arguments wrt provided framework
     # to be legal, all defeaters of an "in" argument must be labelled "out"
-    # returns array of illegally in labelled arguments
+    # returns array of illegally "in" labelled arguments
     illegallyIn: (af) ->
         arg for arg in @in when not isSubset af.defeatermap[arg], @out
 
+    # Check legality of "out" arguments wrt provided framework
     # to be legal at least one defeater of an "out" argument must be labelled "in"
-    # returns array of illegally out labelled arguments
+    # returns array of illegally "out" labelled arguments
     illegallyOut: (af) ->
         arg for arg in @out when intersection(af.defeatermap[arg], @in).length==0
 
     # move arg from one label to another
     # returns updated labelling
     move: (arg, from, to) ->
+        # TODO: test that to and from is one of "in", "out", "undec"
+        # TODO: test that arg is in from
         @[from].splice(@[from].indexOf(arg), 1)
         @[to].push arg
         @
@@ -205,33 +240,10 @@ class PreferredReasoner extends Reasoner
                     if existing.equals labelling
                         ok = false
                 candidates.push(labelling) unless not ok
-                return           
+                return
         candidates=[]
         findLabellings new Labelling(@af.argids)
         candidates
-
-# returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
-powerset = (S) ->
-    P = [[]]
-    P.push P[j].concat S[i] for j of P for i of S
-    P
-
-# returns an array whose elements are elements of array B which are not members of array A
-complement = (A, B) ->
-    (el for el in B when el not in A)
-
-# returns true if all elements of array A are members of array B
-isSubset = (A, B) ->
-    for el in A
-        return false if not (el in B)
-    return true
-
-# returns an array whose elements are in both arrays A and B
-intersection = (A, B) ->
-    result = []
-    for el in A
-        result.push el if el in B
-    result
 
 root = exports ? window
 root.Labelling = Labelling
