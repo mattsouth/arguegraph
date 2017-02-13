@@ -39,8 +39,11 @@
       <p>
         A directed graph can be used to represent an adversarial argument
         framework where nodes are arguments and edges are attacks between
-        arguments. This demo allows you to navigate through the distinct
-        directed graphs with up to three nodes.
+        arguments. The arguegraph javascript library allows you to calculate
+        the sets of arguments that defend themselves using different algorithms,
+        otherwise known as semantics.  This demo allows you to view the results
+        of grounded semantics for all the distinct directed graphs with up to
+        three nodes.
       </p>
     </div>
   </div>
@@ -51,14 +54,14 @@
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <h4>Ground extension</h4>
+      <h4>Grounded Semantics</h4>
       <p>
-        Ground semantics are the most sceptical.  Nodes/arguments are in the
-        ground extension if they are unattacked or defended by an argument that
+        Grounded Semantics are the most sceptical.  Nodes/arguments are in the
+        grounded extension if they are unattacked or defended by an argument that
         is also in the ground extension. For any network there is only ever one
-        ground extension. In this network yellow nodes represent accepted
-        arguments, found in the ground extension. Red nodes are unaccepted
-        arguments, not found in the extension.
+        ground extension. In this graph yellow nodes represent accepted
+        arguments (i.e. in the ground extension) and red nodes are not accepted
+        arguments.
       </p>
     </div>
   </div>
@@ -83,7 +86,7 @@
     let grd = new GroundedReasoner(af).extensions()[0];
     //console.log(keys[index], ' - accepted: ', grd.extensions()[0]);
     for (node in test) {
-      nodes.update({id: node, label: node, border: 'grey', color: {background: (grd.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+      nodes.update({id: node, label: String.fromCharCode('A'.charCodeAt(0) + parseInt(node)), border: 'grey', color: {background: (grd.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
       // remove unneeded attackers
       edges.get({filter: function(item){ return (item.to==node) }}).forEach(function(existing) {
         if (test[node].indexOf(existing.from)==-1) {
