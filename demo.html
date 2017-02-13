@@ -1,162 +1,130 @@
 <!doctype html>
 <html>
 <head>
-  <title>arguegraph | Demo</title>
-  <link rel="stylesheet" href="css/normalize.css">
-  <link rel="stylesheet" href="css/skeleton.css">
-  <link rel="stylesheet" href="css/vis.min.css">
-  <script type="text/javascript" src="js/vis-custom.min.js"></script>
-  <script type="text/javascript" src="js/arguejs.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
-  <style>
-  #mynetwork {
-    border: 1px solid lightgray;
-  }
-  .topline input {
-    margin-top: 10px;
-    margin-bottom: 12px;
-  }
-  .topline h4 {
-    margin-top: 10px;
-    margin-bottom: 0px;
-  }
+  <title>Arguegraph :: Basics</title>
+
+  <script type="text/javascript" src="js/vis.min.js"></script>
+  <script type="text/javascript" src="js/graphs.js"></script>
+  <script type="text/javascript" src="js/arguegraph.js"></script>
+  <link href="css/vis.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style type="text/css">
+    #mynetwork {
+      height: 400px;
+      border: 1px solid lightgray;
+    }
   </style>
 </head>
 <body>
 <div class="container">
-<div class="row topline">
-  <div class="three columns"><h4>arguegraph</h4></div>
-  <div class="six columns">
-    <input class="u-full-width" type="text" name="argument" placeholder="New argument" id="argumentText"/>
+  <div class="row">
+    <h2 class="col-sm-8">Arguegraph :: Basics</h2>
+    <h2 class="col-sm-4">
+      <div class="pull-right hidden-xs">
+        <a class="btn btn-default" href="#" onclick="javascript:down()"> &lt; </a>
+        <span class="position"></span>
+        <a class="btn btn-default" href="#" onclick="javascript:up()"> &gt; </a>
+      </div>
+      <div class="hidden-sm">
+        <a class="btn btn-default" href="#" onclick="javascript:down()"> &lt; </a>
+        <span class="position"></span>
+        <a class="btn btn-default" href="#" onclick="javascript:up()"> &gt; </a>
+      </div>
+    </h2>
   </div>
-  <div class="three columns">
-    <input type="submit" id="argumentAdd" class="button u-full-width" onclick="addArgument()" value="Add &raquo;" />
-    <input type="submit" id="argumentUpdate" class="button u-full-width" style="display: none" value="Update &raquo;" />    
+  <div class="row">
+    <div class="col-xs-12">
+      <p>
+        A directed graph can be used to represent an adversarial argument
+        framework where nodes are arguments and edges are attacks between
+        arguments. This demo allows you to navigate through the distinct
+        directed graphs with up to three nodes.
+      </p>
+    </div>
   </div>
-</div>
-<div id="mynetwork" style="margin-bottom: 10px"></div>
-<div class="row">
-  <div class="twelve columns">
-  <button onclick="clearArguments()">clear</button>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="mynetwork"></div>
+    </div>
   </div>
-</div>
+  <div class="row">
+    <div class="col-xs-12">
+      <h4>Ground extension</h4>
+      <p>
+        Ground semantics are the most sceptical.  Nodes/arguments are in the
+        ground extension if they are unattacked or defended by an argument that
+        is also in the ground extension. For any network there is only ever one
+        ground extension. In this network yellow nodes represent accepted
+        arguments, found in the ground extension. Red nodes are unaccepted
+        arguments, not found in the extension.
+      </p>
+    </div>
+  </div>
 </div>
 <script type="text/javascript">
-
-var counter = 1; // for label generation
-
-function getNextLabel() {
-  var num = counter;
-  // see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/ 
-  for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
-    ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+  let keys = Object.keys(graphs);
+  let index = 0;
+  let nodes = new vis.DataSet();
+  let edges = new vis.DataSet();
+  function labelGraph() {
+    let positions = document.getElementsByClassName('position');
+    for (let i=0; i<positions.length; i++) {
+      positions[i].textContent = (index+1) + '/' + keys.length;
+    }
   }
-  counter++;
-  window.network.nodesData.forEach(function(node) {
-    if (node.label==ret) {
-      ret = getNextLabel();
+  function draw() {
+    let test = graphs[keys[index]];
+    network.unselectAll();
+    labelGraph();
+    // update graph coloring
+    let af = new ArgumentFramework(test);
+    let grd = new GroundedReasoner(af).extensions()[0];
+    //console.log(keys[index], ' - accepted: ', grd.extensions()[0]);
+    for (node in test) {
+      nodes.update({id: node, label: node, border: 'grey', color: {background: (grd.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+      // remove unneeded attackers
+      edges.get({filter: function(item){ return (item.to==node) }}).forEach(function(existing) {
+        if (test[node].indexOf(existing.from)==-1) {
+          edges.remove(existing.id);
+        }
+      });
+      // add missing attackers
+      test[node].forEach(function(attacker) {
+        existing = edges.get({filter:function(item){ return (item.to==node && item.from==attacker) }});
+        if (existing.length==0) {
+          edges.add({to: node, from: attacker, arrows: 'to',color:'grey'});
+        }
+      });
+      for (node in nodes.get()) {
+        if (!test.hasOwnProperty(node)) {
+          nodes.remove(node);
+        }
+      }
     }
-  });
-  return ret;
-}
-
-function addArgument() {
-  var input = $('#argumentText');
-  window.network.nodesData.add({id: window.network.nodesData.length, label: input.val()});
-  input.val(null);
-}
-
-function updateArgument(data, callback) {
-  var input = $('#argumentText');
-  data.label = input.val();
-  input.val(null);
-  $('#argumentUpdate').hide();
-  $('#argumentAdd').show();
-  window.network._unselectAll(false);
-  callback(data);
-}
-
-function clearArguments() {
-  window.network.edgesData.clear();
-  window.network.nodesData.clear();
-  counter = 1;
-  window.network._unselectAll(false);
-}
-
-function graphToAF(graph) {
-  map = {};
-  graph.nodesData.forEach(function(node) {
-    map[node.id]=[];
-  });
-  graph.edgesData.forEach(function(edge) {
-    map[edge.to].push(edge.from.toString());
-  });
-  return new ArgumentFramework(map);
-}
-
-function labelArguments() {
-  var grounded = graphToAF(window.network).grounded();
-  window.network.nodesData.forEach(function(node) {
-    if (grounded.indexOf(node.id.toString())>-1) {
-      node.color='yellow';
+  }
+  function up() {
+    if (index<(keys.length-1)) {
+      index++;
     } else {
-      node.color='red';
+      index=0;
     }
-    window.network.nodesData.update(node, 'labelArgument');
-  });
-}
-
-$(window).load(function(){
-  nodes = new vis.DataSet();
-  edges = new vis.DataSet();
-
-  nodes.on("*", function(event,properties,senderId) {
-    if (senderId!='labelArgument') labelArguments();
-  });
-  edges.on("*", function(event,properties,senderId) {
-    if (senderId!='labelArgument') labelArguments();
-  });
-
-  $('#mynetwork').height($(window).innerHeight()-128);
-
-  // create a network
-  var container = document.getElementById('mynetwork');
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
-  var options = {
-    dataManipulation: {
-      enabled: true,
-      initiallyVisible: true,
-    },
-    edges: {
-      style: 'arrow',
-      color: 'black'
-    },
-    onAdd: function(data, callback) {
-      data.label = getNextLabel();
-      callback(data);
-    },
-    onEdit: function(data,callback) {
-      $('#argumentUpdate').show();
-      $('#argumentAdd').hide();
-      $('#argumentText').val(data.label);
-      el = document.getElementById('argumentUpdate');
-      // see visjs ex 21.  todo: do this with jquery
-      el.onclick = updateArgument.bind(this, data, callback);
+    draw();
+  }
+  function down() {
+    if (index>0) {
+      index--;
+    } else {
+      index=keys.length-1;
     }
-  };
-  window.network = new vis.Network(container, data, options);
-  window.network.on('select', function(ev) {
-    if (ev.nodes.length==0 && $('#argumentUpdate').is(":visible")) {
-      $('#argumentUpdate').hide();
-      $('#argumentUpdate').off('click');
-      $('#argumentAdd').show();
-      $('#argumentText').val(null);
-    }
-  });
-});
+    draw();
+  }
+  let container = document.getElementById('mynetwork');
+  let options = {};
+  let network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+  draw();
 </script>
+
 </body>
 </html>
