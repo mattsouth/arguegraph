@@ -1,15 +1,14 @@
 Arguegraph
 =======
 
-An abstract Argumentation library for use in nodejs or on the web.  Arguegraph is a naive, "start from scratch" library built mainly for educational purposes using papers by Martin Caminada and Sanjay Modgil as source material.
+An abstract Argumentation library for use in nodejs or on the web.  Arguegraph is a naive library built mainly for educational purposes using papers by Martin Caminada and Sanjay Modgil as source material.
 
 [Demo](http://mattsouth.github.io/arguegraph/demo.html) - review all distinct argument frameworks with up to three nodes.
 
 TODO:
-* revise visual indications of accepted/not
 * Generate all complete labellings
 * Generate all extensions (complete, stable, semi-stable, preferred, grounded, ideal)
-* UI for creating/saving/sharing different AFs
+* Argument game implementations
 
 See Also
 * [A Gentle Introduction to Argumentation Semantics - Caminada 2008](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.379.6308&rep=rep1&type=pdf)
