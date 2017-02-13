@@ -60,7 +60,7 @@ describe 'An Argument Framework', ->
       catch e
         e.message.should.equal 'unknown members of args - [2]'
       done()
-      
+
   describe 'should give expected query results for a ', ->
     it 'single argument', (done) ->
       trivial = new AG.ArgumentFramework { '0' : [] }
@@ -147,13 +147,20 @@ describe 'Grounded reasoner', ->
     done()
 
 describe 'Preferred reasoner', ->
+  it 'self-attacked', (done) ->
+    basic = new AG.ArgumentFramework { '0' : ['0'] }
+    reasoner = new AG.PreferredReasoner(basic)
+    labellings = reasoner.labellings()
+    labellings.should.have.length 1
+    labellings.should.include new AG.Labelling([],[],['0'])
+    done()
+
   it 'chain of three', (done) ->
     basic = new AG.ArgumentFramework { '0' : ['1'], '1' : ['2'], '2' : [] }
     reasoner = new AG.PreferredReasoner(basic)
-    extension = reasoner.extensions()[0]
-    extension.should.have.length 2
-    extension.should.include '0'
-    extension.should.include '2'
+    labellings = reasoner.labellings()
+    labellings.should.have.length 1
+    labellings.should.include new AG.Labelling(['0','2'],['1'],[])
     done()
 
   it 'cycle of three', (done) ->

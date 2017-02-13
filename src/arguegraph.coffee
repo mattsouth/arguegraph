@@ -18,6 +18,10 @@ isSubset = (A, B) ->
     return false if not (el in B)
   return true
 
+# returns true if all elements of array A are members of array B and A is smaller than B
+isStrictSubset = (A, B) ->
+  return isSubset(A, B) and A.length < B.length
+
 # returns an array whose elements are in both arrays A and B
 intersection = (A, B) ->
   result = []
@@ -179,6 +183,7 @@ class Labelling
   # move arg from one label to another
   # returns updated labelling
   move: (arg, from, to) ->
+    #console.log 'labelling.move called', @, arg, from, to
     checkLabel = (label) ->
       if not (label in ['in','out','undec'])
         throw new Error "unknown label - #{label}"
@@ -200,7 +205,11 @@ class Reasoner
 
 # the most sceptical of all reasoners
 class GroundedReasoner extends Reasoner
+  # see pages 16/17 of Caminada's Gentle Introduction and
+  # and section 4.1 of Modgil and Caminada
   # grounded reasoner returns a single labelling
+  # start with an all undec labelling and iteratively push arguments
+  # that you can to in/out with the extendinout operation
   labellings: () ->
     labelling = new Labelling()
     extendinout = () =>
@@ -225,33 +234,51 @@ class GroundedReasoner extends Reasoner
     return [labelling]
 
 class PreferredReasoner extends Reasoner
+  # see section 5.1 fo Modgil and Caminada
   labellings: () ->
     checkIn = (labelling) =>
-      illegallyIn = (arg) =>
+      # # returns first defeater it finds from in or null
+      # illegallyIn = (arg) =>
+      #   for defeater in @af.defeatermap[arg]
+      #     return defeater if defeater in labelling.in
+      #   return null
+      # returns true if it finds defeater from undec or null
+      undecDefeater = (arg) =>
         for defeater in @af.defeatermap[arg]
-          return defeater if defeater in labelling.in or defeater in labelling.undec
-        return null
+          return true if defeater in labelling.undec
+        return false
       result = {superIllegal:[], illegal:[]}
-      for arg in labelling.in
-        defeater = illegallyIn(arg)
-        if defeater?
-          if illegallyIn(defeater)?
-            result.illegal.push(arg)
-          else
-            result.superIllegal.push(arg)
+      illegals = labelling.illegallyIn(@af)
+      legals = complement illegals, labelling.in
+      #console.log 'checkIn illegals, legals', illegals, legals
+      for illegal in illegals
+        legalDefeaters = intersection @af.defeatermap[illegal], legals
+        #console.log 'checkIn superIllegal?', illegal, legalDefeaters, undecDefeater(illegal)
+        if legalDefeaters.length>0 or undecDefeater(illegal)
+          result.superIllegal.push(illegal)
+        else
+          result.illegal.push(illegal)
+      #console.log 'checkin result:', result
       result
     transitionLabelling = (labelling, arg) =>
+      #console.log 'transitionLabelling called: ', labelling, arg
       cloned = labelling.clone()
       cloned.move arg,'in','out'
-      illegallyOut = cloned.illegallyOut @af#
-      if arg in illegallyOut
-        cloned.move arg, 'out', 'undec'
+      illegallyOut = cloned.illegallyOut @af
       for defeated in @af.defeatedBy(arg)
         if defeated in illegallyOut
           cloned.move defeated, 'out', 'undec'
+      if arg in illegallyOut and arg in cloned.out
+        cloned.move arg, 'out', 'undec'
+      #console.log 'transitionLabelling result: ', cloned
       cloned
     findLabellings = (labelling) =>
-      # TODO: check labelling is not worse than an existing labelling
+      #console.log 'findLabellings called', labelling
+      # check labelling is not worse than an existing labelling
+      for existing in candidates
+        if isStrictSubset(labelling.in, existing.in)
+          return
+      # assess the illegally in arguments
       illegals = checkIn labelling
       if illegals.illegal.length>0 or illegals.superIllegal.length>0
         if illegals.superIllegal.length>0
@@ -260,7 +287,11 @@ class PreferredReasoner extends Reasoner
           for arg in illegals.illegal
             findLabellings transitionLabelling(labelling, arg)
       else
-        # TODO: prune existing candidates if necessary
+        # prune existing candidates if necessary
+        for existing, idx in candidates
+          if isStrictSubset existing.in, labelling.in
+            candidates.splice(idx)
+        # add labelling if it doesnt already exist
         ok=true
         for existing in candidates
           if existing.equals labelling
@@ -271,6 +302,7 @@ class PreferredReasoner extends Reasoner
     findLabellings new Labelling(@af.argids)
     candidates
 
+# exports is used in the context of npm, window in the browser
 root = exports ? window
 root.Labelling = Labelling
 root.ArgumentFramework = ArgumentFramework
