@@ -1,6 +1,30 @@
-# Abstract argumentation is all about manipulating sets of arguments.
-# First we define some set operations on arrays that are assumed not to include dups or gaps.
-# Note that argumentation, especially this naive library's approach can get computationally expensive.
+###
+# The MIT License (MIT)
+#
+# Copyright (c) 2014 Matthew South
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+###
+
+# Abstract argumentation involves manipulating sets of arguments so first we
+# define some set operations on arrays that are assumed not to include dups or
+# gaps. Note that these algorithms, especially this naïve library's approach can
+# get computationally expensive.
 
 # returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
 powerset = (S) ->
@@ -29,9 +53,15 @@ intersection = (A, B) ->
     result.push el if el in B
   result
 
-# An ArgumentFramework wraps a map of defeats that define the argument network
+# An ArgumentFramework wraps a map of defeats* that define the argument network
 # and provides functions for interrogating that network.
 # Errors are thrown for inconsistent/malformed networks and queries
+# * - Note that the word "defeats" is used widely in the literature, but it may
+# not be the best term to use, as it suggests a resolved struggle whereas in
+# this formalisation it is possible for two arguments to simultaneously defeat
+# one another. It is the job of the algorithms to establish which arguments can
+# be said to defend themselves.  Alternative terms that could be used here
+# include "attack" and "conflict with".
 class ArgumentFramework
   # defeatermap: object whose keys are arguments and whose values are arrays of defeating arguments
   constructor: (@defeatermap={}) ->
@@ -44,9 +74,10 @@ class ArgumentFramework
         unless defeater in @argids
           throw new Error("unknown @defeatermap defeater of #{arg} - #{defeater}")
 
+  # returns true if arg is defeated by a member of args
   # arg: member of @argids
   # args: subset of @argids
-  # returns true if arg is defeated by a member of args
+  # checkParams: optionally check that each arg and member of args are known
   isDefeated: (arg, args, checkParams=true) ->
     if checkParams
       @_checkArg arg
@@ -55,23 +86,26 @@ class ArgumentFramework
       return true if possibledefeater in @defeatermap[arg]
     false
 
-  # arg: member of @argids
   # returns array of arguments defeated by passed argument
+  # arg: member of @argids
+  # checkParams: optionally check that arg is known
   defeatedBy: (arg, checkParams=true) ->
     @_checkArg arg if checkParams
     defeated for defeated in @argids when arg in @defeatermap[defeated]
 
-  # args: subset of @argids
   # returns true if no member of args defeats another member of args
+  # args: subset of @argids
+  # checkParams: optionally check that each member of args is known
   isConflictFree: (args, checkParams=true) ->
     @_checkArgs args if checkParams
     for target in args
       return false if @isDefeated target, args
     true
 
+  # returns true if arg is acceptable wrt args, i.e. all defeaters of arg are defended by args
   # arg: member of @argids
   # args: subset of @argids
-  # returns true if all defeaters of arg are defended by args
+  # checkParams: optionally check that each arg and member of args are known
   isAcceptable: (arg, args, checkParams=true) ->
     if checkParams
       @_checkArg arg
@@ -80,22 +114,25 @@ class ArgumentFramework
       return false unless @isDefeated(defeater, args)
     return true
 
-  # args: subset of @argids
   # returns true if args is conflict free and each member is acceptable wrt to itself
+  # args: subset of @argids
+  # checkParams: optionally check that each member of args is known
   isAdmissible: (args, checkParams=true) ->
     @_checkArgs args if checkParams
     @isConflictFree(args, false) and args.every (arg) => @isAcceptable(arg, args, false)
 
-  # args: subset of @argids
   # returns true if args is admissible and every acceptable argument wrt to args is in args
+  # args: subset of @argids
+  # checkParams: optionally check that each member of args is known
   isComplete: (args, checkParams=true) ->
     @_checkArgs args if checkParams
     for other in complement(args, @argids)
       return false if @isAcceptable(other, args, false)
     @isAdmissible(args, false)
 
-  # args: subset of @argids
   # returns true if args is conflict free and every argument not in args is defeated by a member of args
+  # args: subset of @argids
+  # checkParams: optionally check that each member of args is known
   isStable: (args, checkParams=true) ->
     @_checkArgs args if checkParams
     for other in complement(args, @argids)
@@ -107,7 +144,6 @@ class ArgumentFramework
   # 2. at least one defeater of an "out" argument is labelled "in"
   # 3. at least one defeater of an "undec" argument is also labelled "undec" and no defeaters of an "undec" argument are labelled "in"
   isLegalLabelling: (labelling) ->
-    # first check that label spans this AF
     return false unless labelling.complement(@argids).length is 0
     for arg in labelling.in
       for defeater in @defeatermap[arg]
@@ -128,10 +164,12 @@ class ArgumentFramework
       return false unless ok
     return true
 
+  # check that arg is known in the framework
   _checkArg: (arg) ->
     if not (arg in @argids)
       throw new Error "unknown arg - #{arg}"
 
+  # check that all args are known in the framework
   _checkArgs: (args) ->
     unknown = complement @argids, args
     if unknown.length>0
@@ -181,9 +219,8 @@ class Labelling
     arg for arg in @out when intersection(af.defeatermap[arg], @in).length==0
 
   # move arg from one label to another
-  # returns updated labelling
+  # returns this labelling, updated
   move: (arg, from, to) ->
-    #console.log 'labelling.move called', @, arg, from, to
     checkLabel = (label) ->
       if not (label in ['in','out','undec'])
         throw new Error "unknown label - #{label}"
@@ -203,11 +240,10 @@ class Reasoner
   extensions: () ->
     labelling.in for labelling in @labellings()
 
-# the most sceptical of all reasoners
+# a particular sceptical reasoner that returns a single labelling
 class GroundedReasoner extends Reasoner
   # see pages 16/17 of Caminada's Gentle Introduction and
   # and section 4.1 of Modgil and Caminada
-  # grounded reasoner returns a single labelling
   # start with an all undec labelling and iteratively push arguments
   # that you can to in/out with the extendinout operation
   labellings: () ->
@@ -233,35 +269,26 @@ class GroundedReasoner extends Reasoner
     labelling.undec = labelling.complement @af.argids
     return [labelling]
 
+# A credulous reasoner that can return multiple labellings
 class PreferredReasoner extends Reasoner
-  # see section 5.1 fo Modgil and Caminada
+  # see section 5.1 fo Modgil and Caminada 2009
   labellings: () ->
     checkIn = (labelling) =>
-      # # returns first defeater it finds from in or null
-      # illegallyIn = (arg) =>
-      #   for defeater in @af.defeatermap[arg]
-      #     return defeater if defeater in labelling.in
-      #   return null
-      # returns true if it finds defeater from undec or null
-      undecDefeater = (arg) =>
+      hasUndecDefeater = (arg) =>
         for defeater in @af.defeatermap[arg]
           return true if defeater in labelling.undec
         return false
       result = {superIllegal:[], illegal:[]}
       illegals = labelling.illegallyIn(@af)
       legals = complement illegals, labelling.in
-      #console.log 'checkIn illegals, legals', illegals, legals
       for illegal in illegals
         legalDefeaters = intersection @af.defeatermap[illegal], legals
-        #console.log 'checkIn superIllegal?', illegal, legalDefeaters, undecDefeater(illegal)
-        if legalDefeaters.length>0 or undecDefeater(illegal)
+        if legalDefeaters.length>0 or hasUndecDefeater(illegal)
           result.superIllegal.push(illegal)
         else
           result.illegal.push(illegal)
-      #console.log 'checkin result:', result
       result
     transitionLabelling = (labelling, arg) =>
-      #console.log 'transitionLabelling called: ', labelling, arg
       cloned = labelling.clone()
       cloned.move arg,'in','out'
       illegallyOut = cloned.illegallyOut @af
@@ -270,15 +297,13 @@ class PreferredReasoner extends Reasoner
           cloned.move defeated, 'out', 'undec'
       if arg in illegallyOut and arg in cloned.out
         cloned.move arg, 'out', 'undec'
-      #console.log 'transitionLabelling result: ', cloned
       cloned
     findLabellings = (labelling) =>
-      #console.log 'findLabellings called', labelling
       # check labelling is not worse than an existing labelling
       for existing in candidates
         if isStrictSubset(labelling.in, existing.in)
           return
-      # assess the illegally in arguments
+      # assess the illegally 'in' arguments
       illegals = checkIn labelling
       if illegals.illegal.length>0 or illegals.superIllegal.length>0
         if illegals.superIllegal.length>0
