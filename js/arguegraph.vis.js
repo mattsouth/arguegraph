@@ -1,0 +1,3 @@
+/*
+shared code betwoeen demo and editor html pages
+*/

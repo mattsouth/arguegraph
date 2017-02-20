@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Arguegraph :: Editor</title>
+
+  <script type="text/javascript" src="js/vis.min.js"></script>
+  <script type="text/javascript" src="js/graphs.js"></script>
+  <script type="text/javascript" src="js/arguegraph.js"></script>
+  <script type="text/javascript" src="js/arguegraph.vis.js"></script>
+  <link href="css/vis.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style type="text/css">
+    #mynetwork {
+      height: 260px;
+      border: 1px solid lightgray;
+    }
+
+    @media (min-width: 768px) {
+      #mynetwork {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <h2 class="col-sm-12">Arguegraph :: Editor</h2>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <p>
+        Abstract argumentation considers an argument framework to be a directed graph where
+        nodes represent arguments and edges represent conflicts between the arguments.
+        Use this page to test your own argument frameworks.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="mynetwork"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-6">
+      <select id="semantics-options">
+      </select>
+    </div>
+    <div class="col-xs-6" id="extensions">
+      <div class="pull-right">
+        <button class="btn btn-default" onclick="javascript:extdown()"> &lt; </button>
+        <span id="extension"></span>
+        <button class="btn btn-default" onclick="javascript:extup()"> &gt; </button>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <p id="semantics-description"></p>
+    </div>
+  </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript">
+  let counter = 1; // for label generation
+  let network = null;
+  let nodes = new vis.DataSet();
+  let semantics_selected = 'grounded';
+  let extensions = [];
+  let extension_index = -1;
+  let edges = new vis.DataSet();
+
+  let semantics = {
+    grounded: {
+      name: 'Grounded Extension',
+      description: 'Grounded semantics are the most sceptical.  Nodes/arguments are in the grounded extension if they are unattacked or defended by an argument that is already in the extension. For any network there is only ever one ground extension. Yellow nodes are in the grounded extension. Red nodes are not.',
+      reasoner: 'GroundedLabeller',
+      multi: false
+    },
+    ideal: {
+      name: 'Ideal Extension',
+      description: 'Ideal semantics produce a single extension that can be less sceptical than grounded.  Nodes/arguments are in the ideal extension if they can defend themselves and they are in all preferred extensions. Yellow nodes are in the idea extension. Red nodes are not.',
+      reasoner: 'IdealSemantics',
+      multi: false
+    },
+    stable: {
+      name: 'Stable Extensions',
+      description: 'Stable semantics define extensions that defeat every other argument in the framework, so are a subset of the preferred extensions. Yellow nodes are in the selected extension. Red nodes are not.',
+      reasoner: 'StableSemantics',
+      multi: true
+    },
+    preferred: {
+      name: 'Preferred Extensions',
+      description: 'Preferred semantics are the most credulous.  Nodes/arguments are in a preferred extension if they can defend themselves and the extension fills as much of the argument framework as it can.  There can be more than one extension - try stepping through them all! Yellow nodes are in the selected extension. Red nodes are not.',
+      reasoner: 'PreferredLabeller',
+      multi: true
+    }
+  };
+
+  function getNextLabel() {
+    let num = counter;
+    // see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/
+    for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
+      ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+    }
+    counter++;
+    nodes.forEach(function(node) {
+      if (node.label==ret) {
+        ret = getNextLabel();
+      }
+    });
+    return ret;
+  }
+
+  function clearArguments() {
+    edges.clear();
+    nodes.clear();
+    counter = 1;
+    network._unselectAll(false);
+  }
+
+  // udpate argument framework after change in network
+  function updateGraph() {
+    map = {};
+    nodes.forEach(function(node) {
+      map[node.id]=[];
+    });
+    edges.forEach(function(edge) {
+      map[edge.to].push(edge.from.toString());
+    });
+    let af = new ArgumentFramework(map);
+    let reasoner = new window[semantics[semantics_selected].reasoner](af);
+    extensions = reasoner.extensions();
+    extension_index = 0;
+    labelArguments();;
+    showExtensionIndex();
+  }
+
+  // update graph coloring
+  function labelArguments() {
+    let extension = extensions[extension_index];
+    nodes.forEach(function(node) {
+      if (extension.indexOf(node.id.toString())>-1) {
+        node.color={background: 'yellow',border: 'gray'};
+      } else {
+        node.color={background:'red',border: 'gray'};
+      }
+      nodes.update(node);
+    });
+  }
+
+  function showExtensionIndex() {
+    document.getElementById('extension').textContent = (extension_index+1) + '/' + extensions.length;
+  }
+
+  function selectSemantics(choice) {
+    semantics_selected = choice;
+    extension_index=0;
+    $('#semantics-description').text(semantics[choice].description);
+    if (semantics[choice].multi) {
+      $('#extensions').removeClass('hidden');
+    } else {
+      $('#extensions').addClass('hidden');
+    }
+    updateGraph();
+    showExtensionIndex();
+  }
+
+  function extup() {
+    if (extension_index<(extensions.length-1)) {
+      extension_index++;
+    } else {
+      extension_index=0;
+    }
+    showExtensionIndex();
+    labelArguments();
+  }
+  function extdown() {
+    if (extension_index>0) {
+      extension_index--;
+    } else {
+      extension_index=extensions.length-1;
+    }
+    showExtensionIndex();
+    labelArguments();
+  }
+  var locales = {
+    en: {
+      edit: 'Edit',
+      del: 'Delete selected',
+      back: 'Back',
+      addNode: 'Add Argument',
+      addEdge: 'Connect Arguments',
+      editNode: 'Edit Argument',
+      editEdge: 'Edit Edge',
+      addDescription: 'Click in an empty space to place a new argument.',
+      edgeDescription: 'Click on an argument and drag the edge to another argument to connect them.',
+      editEdgeDescription: 'Click on the control points and drag them to an argument to connect to it.',
+      createEdgeError: 'Cannot link edges to a cluster.',
+      deleteClusterError: 'Clusters cannot be deleted.',
+      editClusterError: 'Clusters cannot be edited.'
+    }
+  }
+  let container = document.getElementById('mynetwork');
+  let options = {
+    edges: {
+      arrows: 'to',
+      color: 'gray'
+    },
+    nodes: {physics: false},
+    manipulation: {
+      enabled: true,
+      initiallyActive: true,
+      addNode: function(nodeData, callback) {
+        nodeData.label = getNextLabel();
+        callback(nodeData);
+      }
+    },
+    locales: locales
+  };
+
+  Object.keys(semantics).forEach(function(logic) {
+    $('#semantics-options').append($('<option>', {
+      value: logic,
+      text: semantics[logic].name
+    }));
+  });
+
+  network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+  document.getElementById('semantics-options').onchange=function(event) {
+    selectSemantics(event.target.value);
+  };
+  $('#semantics-options').val('grounded').change();
+
+  nodes.on('add', function(evt, properties, senderId) {
+    updateGraph();
+  });
+  nodes.on('remove', function(evt, properties, senderId) {
+    updateGraph();
+  });
+  edges.on('add', function(evt, properties, senderId) {
+    updateGraph();
+  });
+  edges.on('remove', function(evt, properties, senderId) {
+    updateGraph();
+  });
+</script>
+
+</body>
+</html>
