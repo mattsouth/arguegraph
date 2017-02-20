@@ -53,6 +53,13 @@ intersection = (A, B) ->
     result.push el if el in B
   result
 
+# returns an array whose elements are in both arrays A and B
+union = (A, B) ->
+  result = A
+  for el in B
+    result.push el if not (el in A)
+  result
+
 # An ArgumentFramework wraps a map of defeats* that define the argument network
 # and provides functions for interrogating that network.
 # Errors are thrown for inconsistent/malformed networks and queries
@@ -232,16 +239,16 @@ class Labelling
     @[to].push arg
     @
 
-# abstract class to be extended by particular reasoners
-class Reasoner
+# abstract class to be extended by particular labellers / semantics
+class Labeller
   constructor: (@af) ->
 
-  # returns an array of extensions (arrays of arguments) that reasoner generates
+  # returns an array of extensions (arrays of arguments) associated with labeller semantics
   extensions: () ->
     labelling.in for labelling in @labellings()
 
-# a particular sceptical reasoner that returns a single labelling
-class GroundedReasoner extends Reasoner
+# a particularly sceptical semantics that returns a single labelling
+class GroundedLabeller extends Labeller
   # see pages 16/17 of Caminada's Gentle Introduction and
   # and section 4.1 of Modgil and Caminada
   # start with an all undec labelling and iteratively push arguments
@@ -269,8 +276,8 @@ class GroundedReasoner extends Reasoner
     labelling.undec = labelling.complement @af.argids
     return [labelling]
 
-# A credulous reasoner that can return multiple labellings
-class PreferredReasoner extends Reasoner
+# A credulous semantics that can return multiple labellings
+class PreferredLabeller extends Labeller
   # see section 5.1 fo Modgil and Caminada 2009
   labellings: () ->
     checkIn = (labelling) =>
@@ -327,9 +334,30 @@ class PreferredReasoner extends Reasoner
     findLabellings new Labelling(@af.argids)
     candidates
 
+# Stable extensions are preferred extensions that defeat all other arguments in a framework
+class StableSemantics extends PreferredLabeller
+  # Filter the labellings based on those that have empty undec
+  extensions: () ->
+    labelling.in for labelling in @labellings() when labelling.undec.length is 0
+
+# Ideal semantics yields a single extension that can be less sceptical than grounded
+class IdealSemantics extends PreferredLabeller
+  # Return the maximal admissible subset of all the preferred extensions
+  extensions: () ->
+    # start with all args
+    result = @af.argids
+    # restrict to those args in all preferred extensions
+    for labelling in @labellings()
+      result = intersection result, labelling.in
+    # prune result until it is admissible (empty set is always admissible)
+    for subset in powerset(result).sort((a, b) ->  return b.length - a.length)
+      return [subset] if @af.isAdmissible(subset)
+
 # exports is used in the context of npm, window in the browser
 root = exports ? window
-root.Labelling = Labelling
 root.ArgumentFramework = ArgumentFramework
-root.GroundedReasoner = GroundedReasoner
-root.PreferredReasoner = PreferredReasoner
+root.Labelling = Labelling
+root.GroundedLabeller = GroundedLabeller
+root.PreferredLabeller = PreferredLabeller
+root.StableSemantics = StableSemantics
+root.IdealSemantics = IdealSemantics

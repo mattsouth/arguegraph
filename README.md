@@ -1,15 +1,13 @@
 # Arguegraph
 
-Abstract argumentation considers a directed graph as an argument framework where
+Abstract argumentation considers an argument framework to be a directed graph where
 nodes represent arguments and edges represent conflicts between the arguments.  
-Multiple algorithms can be used to consider the acceptability or admissibility
-(warning: technical terms!) of arguments in a particular framework. This library
-implements those algorithms using coffeescript which compiles to javascript,
-mostly for pedagogic purposes.
+Multiple algorithms can be used to assess the validity of arguments in a particular framework.
+This javascript library implements those algorithms in coffeescript, mostly for pedagogic purposes.
 
 [Demo](http://mattsouth.github.io/arguegraph/demo.html) - review all distinct argument frameworks with up to three nodes.
 
-## See Also
+## References
 
 * [A Gentle Introduction to Argumentation Semantics - Caminada 2008](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.379.6308&rep=rep1&type=pdf)
 * [Proof Theories and Algorithms for Abstract Argumentation Frameworks - Modgil and Caminada 2009](http://link.springer.com/chapter/10.1007%2F978-0-387-98197-0_6)
@@ -21,5 +19,6 @@ mostly for pedagogic purposes.
 ## TODO
 
 * Generate all complete labellings
-* Generate all extensions (stable, semi-stable, ideal, eager)
+* Generate all extensions (semi-stable, eager, ...)
 * Argument game implementations
+* Alternative sources of arguments
