@@ -1,26 +1,26 @@
 {
-    "name" : "arguegraph",
-    "version" : "0.1.0",
-    "author" : "Matt South <matt@mattsouth.net>",
-    "repository" : {
-        "type" : "git",
-        "url" : "https://github.com/mattsouth/arguegraph"
-    },
-    "license": "MIT",
-    "bugs": {
-      "url": "https://github.com/mattsouth/arguegraph/issues"
-    },
-    "dependencies" : {
-        "coffee-script" :   "*"
-    },
-    "devDependencies" : {
-        "mocha" :           "*",
-        "chai" :            "*",
-        "async" :           "*"
-    },
-    "scripts": {
-        "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
-        "build": "coffee -c src"
-    },
-    "main":"src/arguegraph.js"
+  "name": "arguegraph",
+  "version": "0.2.0",
+  "author": "Matt South <matt@mattsouth.net>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mattsouth/arguegraph"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mattsouth/arguegraph/issues"
+  },
+  "dependencies": {
+    "coffee-script": "*"
+  },
+  "devDependencies": {
+    "mocha": "*",
+    "chai": "*",
+    "async": "*"
+  },
+  "scripts": {
+    "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
+    "build": "coffee -c src"
+  },
+  "main": "src/arguegraph.js"
 }
