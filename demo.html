@@ -96,12 +96,12 @@
   let semantics = {
     grounded: {
       description: 'Grounded Semantics are the most sceptical.  Nodes/arguments are in the grounded extension if they are unattacked or defended by an argument that is already in the ground extension. For any network there is only ever one ground extension. Yellow nodes are accepted arguments, i.e. can be found in the grounded extension. Red nodes are not.',
-      reasoner: 'GroundedReasoner',
+      reasoner: 'GroundedLabeller',
       multi: false
     },
     preferred: {
       description: 'Preferred semantics are the most credulous.  Nodes/arguments are in a preferred extension if they can defend themselves and the extension fills as much of the argument framework as it can.  There can be more than one extension - try stepping through them all! Yellow nodes are in the selected extension. Red nodes are not.',
-      reasoner: 'PreferredReasoner',
+      reasoner: 'PreferredLabeller',
       multi: true
     }
   };

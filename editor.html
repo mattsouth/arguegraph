@@ -10,11 +10,11 @@
   <script type="text/javascript" src="js/vis.min.js"></script>
   <script type="text/javascript" src="js/graphs.js"></script>
   <script type="text/javascript" src="js/arguegraph.js"></script>
-  <script type="text/javascript" src="js/arguegraph.vis.js"></script>
   <link href="css/vis.min.css" rel="stylesheet" type="text/css" />
 
   <!-- Bootstrap -->
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
   <style type="text/css">
     #mynetwork {
       height: 260px;
@@ -31,7 +31,12 @@
 <body>
 <div class="container">
   <div class="row">
-    <h2 class="col-sm-12">Arguegraph :: Editor</h2>
+    <h2 class="col-xs-9">Arguegraph :: Editor</h2>
+    <h2 class="col-xs-3">
+      <div class="pull-right">
+        <button type="button" class="btn btn-default disabled" id="share-graph" data-toggle="modal" data-target="#sharingModal"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></button>
+      </div>
+    </h2>
   </div>
   <div class="row">
     <div class="col-xs-12">
@@ -66,8 +71,30 @@
     </div>
   </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="sharingModal" tabindex="-1" role="dialog" aria-labelledby="Show url to share argument framework">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Share argument framework</h4>
+      </div>
+      <div class="modal-body">
+        Use this <a id="share-url">link</a> to share this argument framework.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script type="text/javascript" src="js/arguegraph.vis.js"></script>
 <script type="text/javascript">
   let counter = 1; // for label generation
   let network = null;
@@ -76,33 +103,6 @@
   let extensions = [];
   let extension_index = -1;
   let edges = new vis.DataSet();
-
-  let semantics = {
-    grounded: {
-      name: 'Grounded Extension',
-      description: 'Grounded semantics are the most sceptical.  Nodes/arguments are in the grounded extension if they are unattacked or defended by an argument that is already in the extension. For any network there is only ever one ground extension. Yellow nodes are in the grounded extension. Red nodes are not.',
-      reasoner: 'GroundedLabeller',
-      multi: false
-    },
-    ideal: {
-      name: 'Ideal Extension',
-      description: 'Ideal semantics produce a single extension that can be less sceptical than grounded.  Nodes/arguments are in the ideal extension if they can defend themselves and they are in all preferred extensions. Yellow nodes are in the idea extension. Red nodes are not.',
-      reasoner: 'IdealSemantics',
-      multi: false
-    },
-    stable: {
-      name: 'Stable Extensions',
-      description: 'Stable semantics define extensions that defeat every other argument in the framework, so are a subset of the preferred extensions. Yellow nodes are in the selected extension. Red nodes are not.',
-      reasoner: 'StableSemantics',
-      multi: true
-    },
-    preferred: {
-      name: 'Preferred Extensions',
-      description: 'Preferred semantics are the most credulous.  Nodes/arguments are in a preferred extension if they can defend themselves and the extension fills as much of the argument framework as it can.  There can be more than one extension - try stepping through them all! Yellow nodes are in the selected extension. Red nodes are not.',
-      reasoner: 'PreferredLabeller',
-      multi: true
-    }
-  };
 
   function getNextLabel() {
     let num = counter;
@@ -119,15 +119,7 @@
     return ret;
   }
 
-  function clearArguments() {
-    edges.clear();
-    nodes.clear();
-    counter = 1;
-    network._unselectAll(false);
-  }
-
-  // udpate argument framework after change in network
-  function updateGraph() {
+  function networkToMap() {
     map = {};
     nodes.forEach(function(node) {
       map[node.id]=[];
@@ -135,12 +127,56 @@
     edges.forEach(function(edge) {
       map[edge.to].push(edge.from.toString());
     });
-    let af = new ArgumentFramework(map);
+    return map;
+  }
+
+  function networkToLabelMap() {
+    map = {};
+    nodes.forEach(function(node) {
+      map[node.label]=[];
+    });
+    edges.forEach(function(edge) {
+      map[nodes.get(edge.to).label].push(nodes.get(edge.from).label);
+    });
+    return map;
+  }
+
+  function labelMapToNetwork(map) {
+    Object.keys(map).forEach(function(key) {
+      nodes.add({label:key});
+    });
+    Object.keys(map).forEach(function(key) {
+      let to_id = nodes.get({filter: function(item) { return (item.label == key); }})[0].id;
+      map[key].forEach(function(attackerLabel) {
+        let from_id = nodes.get({filter: function(item) { return (item.label == attackerLabel); }})[0].id;
+        edges.add({from: from_id, to: to_id});
+      });
+    })
+  }
+
+  function clearArguments() {
+    edges.clear();
+    nodes.clear();
+    counter = 1;
+  }
+
+  // udpate argument framework after change in network
+  function updateGraph() {
+    let af = new ArgumentFramework(networkToMap());
     let reasoner = new window[semantics[semantics_selected].reasoner](af);
     extensions = reasoner.extensions();
     extension_index = 0;
-    labelArguments();;
+    labelArguments();
     showExtensionIndex();
+    if (nodes.length==0) {
+      $('#reset-graph').addClass('disabled');
+      $('#share-graph').addClass('disabled');
+    } else {
+      $('#reset-graph').removeClass('disabled');
+      $('#share-graph').removeClass('disabled');
+    }
+    let url = window.location.origin + window.location.pathname + "?" + encodeURIComponent(JSON.stringify(networkToLabelMap()));
+    $('#share-url').attr('href', url);
   }
 
   // update graph coloring
@@ -182,6 +218,7 @@
     showExtensionIndex();
     labelArguments();
   }
+
   function extdown() {
     if (extension_index>0) {
       extension_index--;
@@ -214,7 +251,7 @@
       arrows: 'to',
       color: 'gray'
     },
-    nodes: {physics: false},
+    // nodes: {physics: false},
     manipulation: {
       enabled: true,
       initiallyActive: true,
@@ -238,6 +275,11 @@
     selectSemantics(event.target.value);
   };
   $('#semantics-options').val('grounded').change();
+  if (window.location.search.length>0) {
+    let map = JSON.parse(decodeURIComponent(window.location.search.substr(1)));
+    labelMapToNetwork(map);
+    updateGraph();
+  }
 
   nodes.on('add', function(evt, properties, senderId) {
     updateGraph();
@@ -250,6 +292,9 @@
   });
   edges.on('remove', function(evt, properties, senderId) {
     updateGraph();
+  });
+  $('#reset-graph').on('click', function(evt) {
+    clearArguments();
   });
 </script>
 
