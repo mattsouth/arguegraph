@@ -28,3 +28,10 @@ let semantics = {
     multi: true
   }
 };
+
+Object.keys(semantics).forEach(function(logic) {
+  $('#semantics-options').append($('<option>', {
+    value: logic,
+    text: semantics[logic].name
+  }));
+});

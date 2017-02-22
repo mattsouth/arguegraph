@@ -31,25 +31,28 @@
 <body>
 <div class="container">
   <div class="row">
-    <h2 class="col-xs-9">Arguegraph :: Editor</h2>
-    <h2 class="col-xs-3">
+    <ol class="breadcrumb" style="margin-bottom:10px">
+      <li><a href="index.html">Arguegraph</a></li>
+      <li class="active">Test</li>
       <div class="pull-right">
-        <button type="button" class="btn btn-default disabled" id="share-graph" data-toggle="modal" data-target="#sharingModal"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></button>
+        <div class="pull-right">
+          <button type="button" class="btn btn-default btn-xs disabled" id="share-graph" data-toggle="modal" data-target="#sharingModal"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></button>
+        </div>
       </div>
-    </h2>
+    </ol>
   </div>
   <div class="row">
     <div class="col-xs-12">
       <p>
-        Abstract argumentation considers an argument framework to be a directed graph where
-        nodes represent arguments and edges represent conflicts between the arguments.
-        Use this page to test your own argument frameworks.
+        <span class="hidden-xs">Abstract argumentation considers an argument framework to be a directed graph where
+        nodes represent arguments and edges represent conflicts between the arguments.</span>
+        Use this page to test and share your own argument frameworks.
       </p>
     </div>
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <div id="mynetwork"></div>
+      <div id="mynetwork" style="margin-bottom: 5px"></div>
     </div>
   </div>
   <div class="row">
@@ -59,9 +62,9 @@
     </div>
     <div class="col-xs-6" id="extensions">
       <div class="pull-right">
-        <button class="btn btn-default" onclick="javascript:extdown()"> &lt; </button>
+        <button class="btn btn-default btn-xs" onclick="javascript:extdown()"> &lt; </button>
         <span id="extension"></span>
-        <button class="btn btn-default" onclick="javascript:extup()"> &gt; </button>
+        <button class="btn btn-default btn-xs" onclick="javascript:extup()"> &gt; </button>
       </div>
     </div>
   </div>
@@ -263,24 +266,20 @@
     locales: locales
   };
 
-  Object.keys(semantics).forEach(function(logic) {
-    $('#semantics-options').append($('<option>', {
-      value: logic,
-      text: semantics[logic].name
-    }));
-  });
-
+  // initialise graph
   network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+  // add selection event handle and then select default semantics
   document.getElementById('semantics-options').onchange=function(event) {
     selectSemantics(event.target.value);
   };
   $('#semantics-options').val('grounded').change();
+  // pre-populate argument framework from the querystring
   if (window.location.search.length>0) {
     let map = JSON.parse(decodeURIComponent(window.location.search.substr(1)));
     labelMapToNetwork(map);
     updateGraph();
   }
-
+  // add graph change event handlers
   nodes.on('add', function(evt, properties, senderId) {
     updateGraph();
   });
@@ -292,9 +291,6 @@
   });
   edges.on('remove', function(evt, properties, senderId) {
     updateGraph();
-  });
-  $('#reset-graph').on('click', function(evt) {
-    clearArguments();
   });
 </script>
 

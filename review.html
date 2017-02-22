@@ -5,7 +5,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Arguegraph :: Simple<span class="hidden-xs"> graphs</span></title>
+  <title>Arguegraph :: Review</title>
 
   <script type="text/javascript" src="js/vis.min.js"></script>
   <script type="text/javascript" src="js/graphs.js"></script>
@@ -30,53 +30,43 @@
 <body>
 <div class="container">
   <div class="row">
-    <h2 class="col-sm-8 hidden-xs">Arguegraph :: Simple graphs</h2>
-    <h2 class="col-sm-8 visible-xs-block">Arguegraph :: Simple</h2>
-    <h2 class="col-sm-4 hidden-xs">
+    <ol class="breadcrumb" style="margin-bottom:10px">
+      <li><a href="index.html">Arguegraph</a></li>
+      <li class="active">Review</li>
       <div class="pull-right">
-        <a class="btn btn-default" href="#" onclick="javascript:down()"> &lt; </a>
+        <a class="btn btn-default btn-xs" onclick="javascript:down()"> &lt; </a>
         <span class="position"></span>
-        <a class="btn btn-default" href="#" onclick="javascript:up()"> &gt; </a>
+        <a class="btn btn-default btn-xs" onclick="javascript:up()"> &gt; </a>
       </div>
-    </h2>
-    <h4 class="col-sm-4 visible-xs-block">
-      <div>
-        <a class="btn btn-default" href="#" onclick="javascript:down()"> &lt; </a>
-        <span class="position"></span>
-        <a class="btn btn-default" href="#" onclick="javascript:up()"> &gt; </a>
-      </div>
-    </h4>
+    </ol>
   </div>
   <div class="row">
     <div class="col-xs-12">
       <p>
-        <span class="hidden-xs">A directed graph can be used to represent an adversarial argument
-        framework where nodes are arguments and edges are attacks between
-        arguments. The arguegraph javascript library allows you to calculate
-        the sets of arguments that defend themselves using different algorithms,
-        otherwise known as semantics. </span>This demo allows you to view the results
-        of different semantics for all the distinct directed graphs with up to
-        three nodes.
+        <span class="hidden-xs">Abstract argumentation considers an argument framework to be a
+          directed graph where nodes represent arguments and edges represent conflicts between the
+          arguments. The arguegraph javascript library allows you to calculate
+        the sets of arguments that defend themselves using different algorithms that identify extensions
+        or sets of arguments that defend themselves with different criteria.</span>This demo allows you to review the different
+        extensions for all the distinct directed graphs with up to three nodes.
       </p>
     </div>
   </div>
   <div class="row">
     <div class="col-xs-12">
-      <div id="mynetwork"></div>
+      <div id="mynetwork" style="margin-bottom: 5px"></div>
     </div>
   </div>
   <div class="row">
     <div class="col-xs-6">
       <select id="semantics-options">
-        <option value="grounded">Grounded Semantics</option>
-        <option value="preferred">Preferred Semantics</option>
       </select>
     </div>
     <div class="col-xs-6" id="extensions">
       <div class="pull-right">
-        <a class="btn btn-default" href="#" onclick="javascript:extdown()"> &lt; </a>
+        <button type="button" class="btn btn-default btn-xs" onclick="javascript:extdown()"> &lt; </button>
         <span id="extension"></span>
-        <a class="btn btn-default" href="#" onclick="javascript:extup()"> &gt; </a>
+        <button type="button" class="btn btn-default btn-xs" onclick="javascript:extup()"> &gt; </button>
       </div>
     </div>
   </div>
@@ -88,23 +78,12 @@
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/arguegraph.vis.js"></script>
 <script type="text/javascript">
   let keys = Object.keys(graphs);
   let index = 0;
   let nodes = new vis.DataSet();
   let edges = new vis.DataSet();
-  let semantics = {
-    grounded: {
-      description: 'Grounded Semantics are the most sceptical.  Nodes/arguments are in the grounded extension if they are unattacked or defended by an argument that is already in the ground extension. For any network there is only ever one ground extension. Yellow nodes are accepted arguments, i.e. can be found in the grounded extension. Red nodes are not.',
-      reasoner: 'GroundedLabeller',
-      multi: false
-    },
-    preferred: {
-      description: 'Preferred semantics are the most credulous.  Nodes/arguments are in a preferred extension if they can defend themselves and the extension fills as much of the argument framework as it can.  There can be more than one extension - try stepping through them all! Yellow nodes are in the selected extension. Red nodes are not.',
-      reasoner: 'PreferredLabeller',
-      multi: true
-    }
-  };
   let semantics_selected = null;
   let extensions = null;
   let extension_index = -1;
