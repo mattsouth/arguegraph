@@ -2,7 +2,7 @@
 
 Abstract argumentation considers an argument framework to be a directed graph where nodes represent arguments and edges represent conflicts between the arguments.  Multiple algorithms can be used to identify sets of arguments that defend themselves in a particular framework. This javascript library implements many of those algorithms in coffeescript, mostly for pedagogic purposes.
 
-[Demo](http://mattsouth.github.io/arguegraph/demo.html) - review all distinct argument frameworks with up to three nodes.
+[Demo](http://mattsouth.github.io/arguegraph/index.html) - Review all distinct argument frameworks with up to three nodes and test/share your own.
 
 ## References
 
@@ -15,7 +15,7 @@ Abstract argumentation considers an argument framework to be a directed graph wh
 
 ## TODO
 
-* Generate all complete labellings
-* Generate all extensions (semi-stable, eager, ...)
 * Argument game implementations
+* More extensions (semi-stable, eager, CF2, ...)
+* Generate all complete labellings
 * Alternative sources of arguments
