@@ -115,8 +115,8 @@
     let af = new ArgumentFramework(test);
     let reasoner = new window[semantics[semantics_selected].reasoner](af);
     extensions = reasoner.extensions();
-    extension_index = 0;
-    let extension = extensions[extension_index];
+    extension_index = (extensions.length>0) ? 0 : -1;
+    let extension = (extensions.length>0) ? extensions[0] : [];
     showExtensionIndex();
     for (node in test) {
       nodes.update({id: node, label: String.fromCharCode('A'.charCodeAt(0) + parseInt(node)), border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
