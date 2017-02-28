@@ -268,7 +268,7 @@
           filter: function(item) {
             return (item.to==edgeData.to && item.from==edgeData.from);
           }
-        })
+        });
         if (matches.length==0) {
           callback(edgeData);
         } else {
@@ -298,6 +298,7 @@
     updateGraph();
   });
   nodes.on('remove', function(evt, properties, senderId) {
+    counter=1;
     updateGraph();
   });
   edges.on('add', function(evt, properties, senderId) {
