@@ -36,7 +36,7 @@
       <li class="active">Test</li>
       <div class="pull-right">
         <div class="pull-right">
-          <button type="button" class="btn btn-default btn-xs disabled" id="share-graph" data-toggle="modal" data-target="#sharingModal"><span class="glyphicon glyphicon-share" aria-hidden="true"></span></button>
+          <button type="button" class="btn btn-default btn-xs disabled" id="share-graph" data-toggle="modal" data-target="#sharingModal">Share <span class="glyphicon glyphicon-share" aria-hidden="true"></span></button>
         </div>
       </div>
     </ol>
@@ -261,6 +261,20 @@
       addNode: function(nodeData, callback) {
         nodeData.label = getNextLabel();
         callback(nodeData);
+      },
+      addEdge: function(edgeData, callback) {
+        // check that there isnt already an edge
+        let matches = edges.get({
+          filter: function(item) {
+            return (item.to==edgeData.to && item.from==edgeData.from);
+          }
+        })
+        if (matches.length==0) {
+          callback(edgeData);
+        } else {
+          console.log('ignored attempt to connect arguments that are already connected')
+          // TODO?: alert user that a second link is ignored
+        }
       }
     },
     locales: locales
