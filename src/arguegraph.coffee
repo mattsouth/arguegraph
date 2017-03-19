@@ -52,7 +52,7 @@ intersection = (A, B) ->
     result.push el if el in B
   result
 
-# returns an array whose elements are in either array A or B
+# returns an array whose elements are from either array A or B
 union = (A, B) ->
   result = A
   for el in B
@@ -60,7 +60,7 @@ union = (A, B) ->
   result
 
 # An ArgumentFramework wraps a map of defeats* (called the defeatermap) that
-# defines the argument network and provides functions for interrogating that
+# defines a network of arguments and provides functions for interrogating that
 # network. Errors are thrown for inconsistent/malformed networks and queries.
 # * The term "defeats" is widely used in the supporting literature, but it may
 # not be the best word to use, as it suggests a resolved struggle.  Alternative
