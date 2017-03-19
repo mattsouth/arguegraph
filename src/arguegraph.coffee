@@ -59,16 +59,12 @@ union = (A, B) ->
     result.push el if not (el in A)
   result
 
-# An ArgumentFramework wraps a map of defeats* that defines the argument network
-# and provides functions for interrogating that network.
-# Errors are thrown for inconsistent/malformed networks and queries
-#
-# * The word "defeats" is used widely in the literature, but it may
-# not be the best term to use, as it suggests a resolved struggle whereas in
-# this formalisation it is possible for two arguments to simultaneously "defeat"
-# one another. It is the job of the algorithms to establish which arguments can
-# be said to defend themselves.  Alternative terms that could be used here
-# include "attack" and "conflict with".
+# An ArgumentFramework wraps a map of defeats* (called the defeatermap) that
+# defines the argument network and provides functions for interrogating that
+# network. Errors are thrown for inconsistent/malformed networks and queries.
+# * The term "defeats" is widely used in the supporting literature, but it may
+# not be the best word to use, as it suggests a resolved struggle.  Alternative
+# terms that could be used here include "attack" and "conflict with".
 class ArgumentFramework
   # defeatermap: object whose keys are arguments and whose values are arrays of defeating arguments
   constructor: (@defeatermap={}) ->
