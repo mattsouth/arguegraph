@@ -23,8 +23,7 @@
 
 # Abstract argumentation involves manipulating sets of arguments so first we
 # define some set operations on arrays that are assumed not to include dups or
-# gaps. Note that these algorithms, especially this naïve library's approach can
-# get computationally expensive.
+# gaps.
 
 # returns the array of all sub-arrays of S, see https://gist.github.com/joyrexus/5423644
 powerset = (S) ->
@@ -53,19 +52,20 @@ intersection = (A, B) ->
     result.push el if el in B
   result
 
-# returns an array whose elements are in both arrays A and B
+# returns an array whose elements are in either array A or B
 union = (A, B) ->
   result = A
   for el in B
     result.push el if not (el in A)
   result
 
-# An ArgumentFramework wraps a map of defeats* that define the argument network
+# An ArgumentFramework wraps a map of defeats* that defines the argument network
 # and provides functions for interrogating that network.
 # Errors are thrown for inconsistent/malformed networks and queries
-# * - Note that the word "defeats" is used widely in the literature, but it may
+#
+# * The word "defeats" is used widely in the literature, but it may
 # not be the best term to use, as it suggests a resolved struggle whereas in
-# this formalisation it is possible for two arguments to simultaneously defeat
+# this formalisation it is possible for two arguments to simultaneously "defeat"
 # one another. It is the job of the algorithms to establish which arguments can
 # be said to defend themselves.  Alternative terms that could be used here
 # include "attack" and "conflict with".
