@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Arguegraph :: Random</title>
+
+  <script type="text/javascript" src="js/vis.min.js"></script>
+  <script type="text/javascript" src="js/graphs.js"></script>
+  <script type="text/javascript" src="js/arguegraph.js"></script>
+  <link href="css/vis.min.css" rel="stylesheet" type="text/css" />
+
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <style type="text/css">
+    #mynetwork {
+      height: 260px;
+      border: 1px solid lightgray;
+    }
+
+    @media (min-width: 768px) {
+      #mynetwork {
+        height: 400px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="row">
+    <ol class="breadcrumb" style="margin-bottom:10px">
+      <li><a href="index.html">Arguegraph Demos</a></li>
+      <li class="active">Random</li>
+      <div class="pull-right">
+        <label for="name">Size:</label>
+        <input id="num-nodes" type="text">
+        <select id="degree-connected">
+          <option value="0">Just connected</option>
+          <option value="0.02">2 %</option>
+          <option value="0.05">5 %</option>
+          <option value="0.1">10 %</option>
+          <option value="0.2">20 %</option>
+          <option value="1">Fully connected</option>
+        </select>
+        <a class="btn btn-default btn-xs" onclick="javascript:redraw()"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
+      </div>
+    </ol>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <p>
+        <span class="hidden-xs">Abstract argumentation considers an argument framework to be a
+          directed graph where nodes represent arguments and edges represent conflicts between the
+          arguments. The arguegraph javascript library allows you calculate extensions
+        or sets of arguments that defend themselves with different criteria.</span>This demo allows you to
+        generate a randomly generated graph of a particular size and connected-ness.
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="mynetwork" style="margin-bottom: 5px"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-6">
+      <select id="semantics-options">
+      </select>
+    </div>
+    <div class="col-xs-6" id="extensions">
+      <div class="pull-right">
+        <button type="button" class="btn btn-default btn-xs" onclick="javascript:extdown()"> &lt; </button>
+        <span id="extension"></span>
+        <button type="button" class="btn btn-default btn-xs" onclick="javascript:extup()"> &gt; </button>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-xs-12">
+      <p id="semantics-description"></p>
+    </div>
+  </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script type="text/javascript" src="js/arguegraph.vis.js"></script>
+<script type="text/javascript">
+  let index = 0;
+  let nodes = new vis.DataSet();
+  let edges = new vis.DataSet();
+  let semantics_selected = null;
+  let extensions = null;
+  let extension_index = -1;
+  let num_nodes = 10;
+  let degree_connected = 0.1;
+  function showExtensionIndex() {
+    document.getElementById('extension').textContent = (extension_index+1) + '/' + extensions.length;
+  }
+  function showGenerateParameters() {
+    $('#num-nodes').val(num_nodes);
+    $('#degree-connected').val(degree_connected);
+  }
+  function selectSemantics(choice) {
+    semantics_selected = choice;
+    extension_index=0;
+    $('#semantics-description').text(semantics[choice].description);
+    if (semantics[choice].multi) {
+      $('#extensions').removeClass('hidden');
+    } else {
+      $('#extensions').addClass('hidden');
+    }
+    draw();
+  }
+
+  function getLabel(num) {
+    // see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/
+    for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
+      ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+    }
+    console.log('getLabel',num,ret);
+    return ret;
+  }
+
+  // generates fully connected argument framework defeatMap
+  // with num nodes, connected to a degree percentage of fully connected
+  function generate(num, degree) {
+    let start = new Date();
+    if (degree<0 || degree>1) {
+      throw new Error('degree must be in the range 0-1');
+    }
+    map = {};
+    let it = 0;
+    // create nodes and connect them to the group
+    for (i=0; i<num; i++) {
+      let node = getLabel(i+1);
+      map[node] = [];
+      if (i>0) {
+        let other = getLabel(Math.floor(Math.random()*i)+1);
+        if (Math.random()>0.5) {
+          map[other].push(node);
+        } else {
+          map[node].push(other);
+        }
+        it++;
+      }
+    }
+    let total = Math.floor(num*num*degree);
+    // add any extra nodes, if needed
+    while (it<total) {
+      let source = getLabel(Math.floor(Math.random()*num)+1);
+      let target = getLabel(Math.floor(Math.random()*num)+1);
+      if (map[source].indexOf(target)==-1) {
+        map[source].push(target);
+        it++;
+      }
+    }
+    console.log('network generated in ', (new Date().getTime()-start.getTime()), ' millis');
+    return map;
+  }
+
+  function getNextLabel() {
+    let num = counter;
+    // see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/
+    for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
+      ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
+    }
+    counter++;
+    nodes.forEach(function(node) {
+      if (node.label==ret) {
+        ret = getNextLabel();
+      }
+    });
+    return ret;
+  }
+
+  function networkToMap() {
+    map = {};
+    nodes.forEach(function(node) {
+      map[node.id]=[];
+    });
+    edges.forEach(function(edge) {
+      map[edge.to].push(edge.from.toString());
+    });
+    return map;
+  }
+
+  function mapToNetwork() {
+    nodes.clear();
+    edges.clear();
+    index=1;
+    Object.keys(map).forEach(function(key) {
+      node.push({})
+    });
+  }
+
+  function labelMapToNetwork(map) {
+    Object.keys(map).forEach(function(key) {
+      nodes.add({label:key});
+    });
+    Object.keys(map).forEach(function(key) {
+      let to_id = nodes.get({filter: function(item) { return (item.label == key); }})[0].id;
+      map[key].forEach(function(attackerLabel) {
+        let from_id = nodes.get({filter: function(item) { return (item.label == attackerLabel); }})[0].id;
+        edges.add({from: from_id, to: to_id});
+      });
+    })
+  }
+
+  function draw() {
+    network.unselectAll();
+    // update graph coloring
+    let map = networkToMap();
+    let af = new ArgumentFramework(map);
+    let reasoner = new window[semantics[semantics_selected].reasoner](af);
+    let start = new Date()
+    console.log('starting ', semantics_selected, ' reasoner');
+    extensions = reasoner.extensions();
+    console.log('extensions generated in ', (new Date().getTime()-start.getTime()), ' millis');
+    extension_index = (extensions.length>0) ? 0 : -1;
+    let extension = (extensions.length>0) ? extensions[0] : [];
+    showExtensionIndex();
+    showGenerateParameters();
+    for (node in map) {
+      nodes.update({id: node, label: String.fromCharCode('A'.charCodeAt(0) + parseInt(node)), border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+      // remove unneeded attackers
+      edges.get({filter: function(item){ return (item.to==node) }}).forEach(function(existing) {
+        if (map[node].indexOf(existing.from)==-1) {
+          edges.remove(existing.id);
+        }
+      });
+      // add missing attackers
+      map[node].forEach(function(attacker) {
+        existing = edges.get({filter:function(item){ return (item.to==node && item.from==attacker) }});
+        if (existing.length==0) {
+          edges.add({to: node, from: attacker, arrows: 'to',color:'grey'});
+        }
+      });
+      for (node in nodes.get()) {
+        if (!map.hasOwnProperty(node)) {
+          nodes.remove(node);
+        }
+      }
+    }
+  }
+  // a lightweight version of draw() for when the selected extension changes (but the graph remains the same)
+  function update() {
+    let test = graphs[keys[index]];
+    network.unselectAll();
+    let extension = extensions[extension_index];
+    showExtensionIndex();
+    for (node in test) {
+      nodes.update({id: node, label: String.fromCharCode('A'.charCodeAt(0) + parseInt(node)), border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+    }
+  }
+  function up() {
+    if (index<(keys.length-1)) {
+      index++;
+    } else {
+      index=0;
+    }
+    draw();
+  }
+  function down() {
+    if (index>0) {
+      index--;
+    } else {
+      index=keys.length-1;
+    }
+    draw();
+  }
+  function extup() {
+    if (extension_index<(extensions.length-1)) {
+      extension_index++;
+    } else {
+      extension_index=0;
+    }
+    update();
+  }
+  function extdown() {
+    if (extension_index>0) {
+      extension_index--;
+    } else {
+      extension_index=extensions.length-1;
+    }
+    update();
+  }
+  function redraw() {
+    nodes.clear();
+    edges.clear();
+    num_nodes = $('#num-nodes').val();
+    degree_connected = $('#degree-connected').val();
+    let generated = generate(num_nodes, degree_connected);
+    labelMapToNetwork(generated);
+    console.log('redraw network', )
+    network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+    draw();
+  }
+  let container = document.getElementById('mynetwork');
+  let options = {
+    edges: {
+      arrows: 'to',
+      color: 'gray'
+    }
+  };
+  let generated = generate(num_nodes, degree_connected);
+  labelMapToNetwork(generated);
+  let network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+  document.getElementById('semantics-options').onchange=function(event) {
+    selectSemantics(event.target.value);
+  };
+  $('#semantics-options').val('grounded').change();
+</script>
+
+</body>
+</html>
