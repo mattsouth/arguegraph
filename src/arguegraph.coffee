@@ -316,9 +316,12 @@ class PreferredLabeller extends Labeller
             findLabellings transitionLabelling(labelling, arg)
       else
         # prune existing candidates if necessary
+        earmarked = [] # identify prunable candidates
         for existing, idx in candidates
           if isStrictSubset existing.in, labelling.in
-            candidates.splice(idx)
+            earmarked.push idx
+        for idx in earmarked.reverse() # prune in reverse order, to make sure the correct ones are pruned
+          candidates.splice idx, 1
         # add labelling if it doesnt already exist
         ok=true
         for existing in candidates

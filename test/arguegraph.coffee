@@ -153,6 +153,20 @@ describe 'Preferred labeller', ->
     labellings.should.include new AG.Labelling(['B'],['A'],[])
     done()
 
+  it 'framework that requires pruning candidates', (done) ->
+    map =
+      'A': ['B']
+      'B': ['D']
+      'C': ['A','D']
+      'D': ['C']
+      'E': ['D']
+      'F': ['D']
+    af = new AG.ArgumentFramework map
+    labeller = new AG.PreferredLabeller(af)
+    labellings = labeller.labellings()
+    done()
+
+
 describe 'Stable Semantics', ->
   # there are two preferred labellings {in:['A'],out:['B'],undec:['C','D','E']}
   # and {in:['B','D'],out:['A','C','E'],undec:[]} of which only one is stable
