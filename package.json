@@ -1,7 +1,7 @@
 {
   "name": "arguegraph",
-  "description":"A javascript abstract argumentation library.",
-  "version": "0.2.0",
+  "description": "A javascript abstract argumentation library.",
+  "version": "0.2.1",
   "author": "Matt South <matt@mattsouth.net>",
   "repository": {
     "type": "git",
