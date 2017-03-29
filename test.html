@@ -50,6 +50,7 @@
       </p>
     </div>
   </div>
+  <!-- begin arguegraph viewer -->
   <div class="row">
     <div class="col-xs-12">
       <div id="mynetwork" style="margin-bottom: 5px"></div>
@@ -73,6 +74,7 @@
       <p id="semantics-description"></p>
     </div>
   </div>
+  <!-- end arguegraph viewer -->
 </div>
 
 <!-- Modal -->
@@ -99,49 +101,18 @@
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 <script type="text/javascript" src="js/arguegraph.vis.js"></script>
 <script type="text/javascript">
-  let counter = 1; // for label generation
-  let network = null;
-  let nodes = new vis.DataSet();
-  let semantics_selected = 'grounded';
-  let extensions = [];
-  let extension_index = -1;
-  let edges = new vis.DataSet();
+
+  let counter = 1;
 
   function getNextLabel() {
-    let num = counter;
-    // see http://cwestblog.com/2013/09/05/javascript-snippet-convert-number-to-column-name/
-    for (var ret = '', a = 1, b = 26; (num -= a) >= 0; a = b, b *= 26) {
-      ret = String.fromCharCode(parseInt((num % b) / a) + 65) + ret;
-    }
+    let label = getLabel(counter);
     counter++;
     nodes.forEach(function(node) {
-      if (node.label==ret) {
-        ret = getNextLabel();
+      if (node.label==label) {
+        label = getNextLabel();
       }
     });
-    return ret;
-  }
-
-  function networkToMap() {
-    map = {};
-    nodes.forEach(function(node) {
-      map[node.id]=[];
-    });
-    edges.forEach(function(edge) {
-      map[edge.to].push(edge.from.toString());
-    });
-    return map;
-  }
-
-  function networkToLabelMap() {
-    map = {};
-    nodes.forEach(function(node) {
-      map[node.label]=[];
-    });
-    edges.forEach(function(edge) {
-      map[nodes.get(edge.to).label].push(nodes.get(edge.from).label);
-    });
-    return map;
+    return label;
   }
 
   function labelMapToNetwork(map) {
@@ -155,12 +126,6 @@
         edges.add({from: from_id, to: to_id});
       });
     })
-  }
-
-  function clearArguments() {
-    edges.clear();
-    nodes.clear();
-    counter = 1;
   }
 
   // udpate argument framework after change in network
@@ -195,10 +160,6 @@
     });
   }
 
-  function showExtensionIndex() {
-    document.getElementById('extension').textContent = (extension_index+1) + '/' + extensions.length;
-  }
-
   function selectSemantics(choice) {
     semantics_selected = choice;
     extension_index=0;
@@ -231,31 +192,14 @@
     showExtensionIndex();
     labelArguments();
   }
-  var locales = {
-    en: {
-      edit: 'Edit',
-      del: 'Delete selected',
-      back: 'Back',
-      addNode: 'Add Argument',
-      addEdge: 'Connect Arguments',
-      editNode: 'Edit Argument',
-      editEdge: 'Edit Edge',
-      addDescription: 'Click in an empty space to place a new argument.',
-      edgeDescription: 'Click on an argument and drag the edge to another argument to connect them.',
-      editEdgeDescription: 'Click on the control points and drag them to an argument to connect to it.',
-      createEdgeError: 'Cannot link edges to a cluster.',
-      deleteClusterError: 'Clusters cannot be deleted.',
-      editClusterError: 'Clusters cannot be edited.'
-    }
-  }
-  let container = document.getElementById('mynetwork');
-  let options = {
-    edges: {
-      arrows: 'to',
-      color: 'gray'
-    },
-    // nodes: {physics: false},
-    manipulation: {
+
+  // TODO: add button to refresh with glyphicon-refresh
+  // TODO: repace add node button with glyphicon-plus
+  // TODO: replace add edge button with glyphicon-link
+  // TODO: replace edit edge button with glyphicon-pencil
+  // TODO: replace delete button with glyphicon-trash
+  // TODO: replace back button with glyphicon-arrow-left or chevron-left
+  network_options.manipulation = {
       enabled: true,
       initiallyActive: true,
       addNode: function(nodeData, callback) {
@@ -276,12 +220,10 @@
           // TODO?: alert user that a second link is ignored
         }
       }
-    },
-    locales: locales
-  };
+    };
 
   // initialise graph
-  network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
+  network = new vis.Network(document.getElementById('mynetwork'), {nodes: nodes, edges: edges}, network_options);
   // add selection event handle and then select default semantics
   document.getElementById('semantics-options').onchange=function(event) {
     selectSemantics(event.target.value);

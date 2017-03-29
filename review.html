@@ -51,6 +51,7 @@
       </p>
     </div>
   </div>
+  <!-- begin arguegraph viewer -->
   <div class="row">
     <div class="col-xs-12">
       <div id="mynetwork" style="margin-bottom: 5px"></div>
@@ -74,6 +75,7 @@
       <p id="semantics-description"></p>
     </div>
   </div>
+  <!-- end arguegraph viewer -->
 </div>
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
@@ -81,31 +83,12 @@
 <script type="text/javascript">
   let keys = Object.keys(graphs);
   let index = 0;
-  let nodes = new vis.DataSet();
-  let edges = new vis.DataSet();
-  let semantics_selected = null;
-  let extensions = null;
-  let extension_index = -1;
   // update current index in the list of available graphs
   function showIndex() {
     let positions = document.getElementsByClassName('position');
     for (let i=0; i<positions.length; i++) {
       positions[i].textContent = (index+1) + '/' + keys.length;
     }
-  }
-  function showExtensionIndex() {
-    document.getElementById('extension').textContent = (extension_index+1) + '/' + extensions.length;
-  }
-  function selectSemantics(choice) {
-    semantics_selected = choice;
-    extension_index=0;
-    $('#semantics-description').text(semantics[choice].description);
-    if (semantics[choice].multi) {
-      $('#extensions').removeClass('hidden');
-    } else {
-      $('#extensions').addClass('hidden');
-    }
-    draw();
   }
   function draw() {
     let test = graphs[keys[index]];
@@ -166,30 +149,23 @@
     }
     draw();
   }
-  function extup() {
-    if (extension_index<(extensions.length-1)) {
-      extension_index++;
+
+  let network = new vis.Network(document.getElementById('mynetwork'), {nodes: nodes, edges: edges}, network_options);
+  function selectSemantics(choice) {
+    semantics_selected = choice;
+    extension_index=0;
+    $('#semantics-description').text(semantics[choice].description);
+    if (semantics[choice].multi) {
+      $('#extensions').removeClass('hidden');
     } else {
-      extension_index=0;
+      $('#extensions').addClass('hidden');
     }
-    update();
+    draw();
   }
-  function extdown() {
-    if (extension_index>0) {
-      extension_index--;
-    } else {
-      extension_index=extensions.length-1;
-    }
-    update();
-  }
-  let container = document.getElementById('mynetwork');
-  let options = {};
-  let network = new vis.Network(container, {nodes: nodes, edges: edges}, options);
   document.getElementById('semantics-options').onchange=function(event) {
     selectSemantics(event.target.value);
   };
   $('#semantics-options').val('grounded').change();
-  draw();
 </script>
 
 </body>

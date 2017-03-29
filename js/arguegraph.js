@@ -519,7 +519,7 @@
       })(this);
       findLabellings = (function(_this) {
         return function(labelling) {
-          var arg, existing, idx, illegals, k, l, len, len1, len2, len3, m, n, ok, ref, results;
+          var arg, earmarked, existing, idx, illegals, k, l, len, len1, len2, len3, len4, m, n, o, ok, ref, ref1, results;
           for (k = 0, len = candidates.length; k < len; k++) {
             existing = candidates[k];
             if (isStrictSubset(labelling["in"], existing["in"])) {
@@ -540,15 +540,21 @@
               return results;
             }
           } else {
+            earmarked = [];
             for (idx = m = 0, len2 = candidates.length; m < len2; idx = ++m) {
               existing = candidates[idx];
               if (isStrictSubset(existing["in"], labelling["in"])) {
-                candidates.splice(idx);
+                earmarked.push(idx);
               }
             }
+            ref1 = earmarked.reverse();
+            for (n = 0, len3 = ref1.length; n < len3; n++) {
+              idx = ref1[n];
+              candidates.splice(idx, 1);
+            }
             ok = true;
-            for (n = 0, len3 = candidates.length; n < len3; n++) {
-              existing = candidates[n];
+            for (o = 0, len4 = candidates.length; o < len4; o++) {
+              existing = candidates[o];
               if (existing.equals(labelling)) {
                 ok = false;
               }
