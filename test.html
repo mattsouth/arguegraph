@@ -152,9 +152,9 @@
     let extension = extensions[extension_index];
     nodes.forEach(function(node) {
       if (extension.indexOf(node.id.toString())>-1) {
-        node.color={background: 'yellow',border: 'gray'};
+        node.color={background: 'yellow',border: 'gray', highlight:{background: 'gold', border: 'gray'}};
       } else {
-        node.color={background:'red',border: 'gray'};
+        node.color={background:'red',border: 'gray', highlight:{background: 'tomato', border: 'gray'}};
       }
       nodes.update(node);
     });

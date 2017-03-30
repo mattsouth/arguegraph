@@ -40,34 +40,29 @@
     </ol>
   </div>
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-sm-6">
       <p>
+        <a class="btn btn-default btn-sm pull-right" onclick="javascript:redraw()"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
         <span class="hidden-xs">Abstract argumentation considers an argument framework to be a
           directed graph where nodes represent arguments and edges represent conflicts between the
           arguments. The arguegraph javascript library allows you calculate extensions
-        or sets of arguments that defend themselves with different criteria.</span>This demo allows you to
-        generate a randomly generated graph of a particular size and connected-ness.
+          or sets of arguments that defend themselves with different criteria.</span> This demo allows you to
+          generate a randomly connected graph of a particular size and connected-ness.
       </p>
+    </div>
+    <div class="col-sm-6">
+      <label for="num-nodes">Size:</label>
+      <input id="num-nodes" name="num-nodes" type="number" class="form-control input-sm" onchange="javascript:redraw()">
+      <label for="degree-connected">Connectivity:</label>
+      <select id="degree-connected" name="degree-connected" class="form-control input-sm" onchange="javascript:redraw()" style="margin-bottom: 5px">
+        <option value="0.05">5 %</option>
+        <option value="0.1">10 %</option>
+        <option value="0.15">15 %</option>
+        <option value="0.2">20 %</option>
+      </select>
     </div>
   </div>
   <!-- begin arguegraph viewer -->
-  <div class="row">
-    <div class="col-xs-12">
-      <form class="form-inline pull-right" style="margin-bottom: 5px">
-        <label for="name">Size:</label>
-        <input id="num-nodes" type="text" class="form-control input-sm">
-        <select id="degree-connected" class="form-control input-sm">
-          <option value="0">Just connected</option>
-          <option value="0.02">2 %</option>
-          <option value="0.05">5 %</option>
-          <option value="0.1">10 %</option>
-          <option value="0.2">20 %</option>
-          <option value="1">Fully connected</option>
-        </select>
-        <a class="btn btn-default btn-sm" onclick="javascript:redraw()"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a>
-      </form>
-    </div>
-  </div>
   <div class="row">
     <div class="col-xs-12">
       <div id="mynetwork" style="margin-bottom: 5px"></div>
@@ -180,7 +175,7 @@
     showExtensionIndex();
     showGenerateParameters();
     for (node in map) {
-      nodes.update({id: node, border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+      nodes.update({id: node, border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey', highlight:{background: (extension.indexOf(node)>-1?'gold':'tomato'), border: 'gray'}}});
     }
   }
 
@@ -191,7 +186,7 @@
     let extension = extensions[extension_index];
     showExtensionIndex();
     for (node in networkToMap()) {
-      nodes.update({id: node, border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey'}});
+      nodes.update({id: node, border: 'grey', color: {background: (extension.indexOf(node)>-1?'yellow':'red'), border: 'grey', highlight:{background: (extension.indexOf(node)>-1?'gold':'tomato'), border: 'gray'}}});
     }
   }
 
