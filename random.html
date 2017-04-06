@@ -221,7 +221,7 @@
     selectSemantics(event.target.value);
   };
   $('#semantics-options').val('grounded').change();
-  let url = window.location.origin + '/test.html' + "?" + encodeURIComponent(JSON.stringify(networkToLabelMap()));
+  let url = window.location.origin + window.location.pathname.replace('random','test') + "?" + encodeURIComponent(JSON.stringify(networkToLabelMap()));
   $('#share-url').attr('href', url);
 
   </script>
