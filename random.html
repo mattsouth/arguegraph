@@ -198,7 +198,7 @@
     let generated = generate(num_nodes, degree_connected);
     setNodesAndEdgesFromLabelNetwork(generate(num_nodes, degree_connected));
     draw();
-    let url = window.location.origin + '/test.html' + "?" + encodeURIComponent(JSON.stringify(networkToLabelMap()));
+    let url = window.location.origin + window.location.pathname.replace('random','test') + "?" + encodeURIComponent(JSON.stringify(networkToLabelMap()));
     $('#share-url').attr('href', url);
   }
 
