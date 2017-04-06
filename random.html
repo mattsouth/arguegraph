@@ -121,7 +121,6 @@
   // with num nodes, connected to a degree percentage of fully connected
   // returns labelMap
   function generate(num, degree) {
-    let start = new Date();
     if (degree<0 || degree>1) {
       throw new Error('degree must be in the range 0-1');
     }
@@ -151,7 +150,6 @@
         it++;
       }
     }
-    console.log('network generated in ', (new Date().getTime()-start.getTime()), ' millis');
     return map;
   }
 
@@ -169,7 +167,7 @@
     let start = new Date()
     console.log('starting ', semantics_selected, ' reasoner');
     extensions = reasoner.extensions();
-    console.log(extensions.length, ' extensions generated in ', (new Date().getTime()-start.getTime()), ' millis');
+    console.log(extensions.length, ' extension' + (extensions.length!=1 ? 's' : '')+ ' found in ', (new Date().getTime()-start.getTime()), ' millis');
     extension_index = (extensions.length>0) ? 0 : -1;
     let extension = (extensions.length>0) ? extensions[0] : [];
     showExtensionIndex();
