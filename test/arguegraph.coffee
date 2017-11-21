@@ -1,6 +1,5 @@
 should = require('chai').should()
 AG = require '../src/arguegraph'
-Async = require 'async'
 Mocha = require 'mocha'
 
 describe 'A Labelling', ->

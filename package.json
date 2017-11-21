@@ -15,9 +15,8 @@
     "coffee-script": "*"
   },
   "devDependencies": {
-    "mocha": "*",
-    "chai": "*",
-    "async": "*"
+    "mocha": "3.5.3",
+    "chai": "3.5.0"
   },
   "scripts": {
     "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
