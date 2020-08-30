@@ -19,8 +19,7 @@
     "chai": "3.5.0"
   },
   "scripts": {
-    "test": "coffee -c src test && node node_modules/mocha/bin/mocha",
-    "build": "coffee -c src"
+    "test": "node node_modules/mocha/bin/mocha"
   },
   "main": "src/arguegraph.js"
 }
