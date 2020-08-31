@@ -1,5 +1,8 @@
+v0.3.0
+migrate from coffeescript to javascript with decaffeinate
+
 v0.2.0
 ideal and stable semantics
 
 v0.1.0
-initial release with preferred and grounded labeller algorithms implmented
+initial release with preferred and grounded labeller algorithms implemented
