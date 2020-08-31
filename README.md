@@ -9,9 +9,7 @@ Abstract argumentation considers an argument framework to be a directed graph wh
 * [A Gentle Introduction to Argumentation Semantics - Caminada 2008](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.379.6308&rep=rep1&type=pdf)
 * [Proof Theories and Algorithms for Abstract Argumentation Frameworks - Modgil and Caminada 2009](http://link.springer.com/chapter/10.1007%2F978-0-387-98197-0_6)
 * http://en.wikipedia.org/wiki/Argumentation_framework
-* http://ova.computing.dundee.ac.uk/ova-gen/
 * http://lidia.cs.uns.edu.ar/delp_client/
-* http://www.argkit.org
 
 ## TODO
 
