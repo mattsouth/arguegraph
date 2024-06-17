@@ -64,7 +64,7 @@ const union = function(A, B) {
 // * The term "defeats" is widely used in the supporting literature, but it may
 // not be the best word to use, as it suggests a resolved struggle.  Alternative
 // terms that could be used here include "attack" and "conflict with".
-class ArgumentFramework {
+export class ArgumentFramework {
   // defeatermap: object whose keys are arguments and whose values are arrays of defeating arguments
   constructor(defeatermap) {
     this.defeatermap = defeatermap || {};
@@ -221,7 +221,7 @@ class ArgumentFramework {
 // A Labelling consists of three mutually distinct argument sets, "in", "out" and "undec"
 // TODO: Sort arrays on construction? (not unless you sort on insertion)
 // TODO: Link a Labelling to an ArgumentFramework? (thus removing need for parameter in illegallyIn and illegallyOut functions and allowing for possibility of the argument framework changing after labelling was constructed)
-class Labelling {
+export class Labelling {
   constructor(ins, outs, undecs) {
     this.in = ins || [];
     this.out = outs || [];
@@ -315,7 +315,7 @@ class Labeller {
 }
 
 // a particularly sceptical semantics that returns a single labelling
-class GroundedLabeller extends Labeller {
+export class GroundedLabeller extends Labeller {
   // see pages 16/17 of Caminada's Gentle Introduction and
   // and section 4.1 of Modgil and Caminada
   // start with an all undec labelling and iteratively push arguments
@@ -352,7 +352,7 @@ class GroundedLabeller extends Labeller {
 }
 
 // A credulous semantics that can return multiple labellings
-class PreferredLabeller extends Labeller {
+export class PreferredLabeller extends Labeller {
   // see section 5.1 fo Modgil and Caminada 2009
   labellings() {
     const checkIn = labelling => {
@@ -437,7 +437,7 @@ class PreferredLabeller extends Labeller {
 }
 
 // Stable extensions are preferred extensions that defeat all other arguments in a framework
-class StableSemantics extends PreferredLabeller {
+export class StableSemantics extends PreferredLabeller {
   // Filter the labellings based on those that have empty undec
   extensions() {
     return this.labellings().filter((labelling) => labelling.undec.length === 0).map((labelling) => labelling.in);
@@ -445,7 +445,7 @@ class StableSemantics extends PreferredLabeller {
 }
 
 // Ideal semantics yields a single extension that can be less sceptical than grounded
-class IdealSemantics extends PreferredLabeller {
+export class IdealSemantics extends PreferredLabeller {
   // Return the maximal admissible subset of all the preferred extensions
   extensions() {
     // start with all args
@@ -461,11 +461,11 @@ class IdealSemantics extends PreferredLabeller {
   }
 }
 
-// exports is used in the context of npm, window in the browser
-const root = typeof exports !== 'undefined' && exports !== null ? exports : window;
-root.ArgumentFramework = ArgumentFramework;
-root.Labelling = Labelling;
-root.GroundedLabeller = GroundedLabeller;
-root.PreferredLabeller = PreferredLabeller;
-root.StableSemantics = StableSemantics;
-root.IdealSemantics = IdealSemantics;
+// // exports is used in the context of npm, window in the browser
+// const root = typeof exports !== 'undefined' && exports !== null ? exports : window;
+// root.ArgumentFramework = ArgumentFramework;
+// root.Labelling = Labelling;
+// root.GroundedLabeller = GroundedLabeller;
+// root.PreferredLabeller = PreferredLabeller;
+// root.StableSemantics = StableSemantics;
+// root.IdealSemantics = IdealSemantics;

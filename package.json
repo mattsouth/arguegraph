@@ -3,6 +3,7 @@
   "description": "A javascript abstract argumentation library.",
   "version": "0.3.0",
   "author": "Matt South <matt@mattsouth.net>",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "https://github.com/mattsouth/arguegraph"
@@ -12,8 +13,8 @@
     "url": "https://github.com/mattsouth/arguegraph/issues"
   },
   "devDependencies": {
-    "chai": "3.5.0",
-    "mocha": "^8.3.2"
+    "chai": "^5.1.1",
+    "mocha": "^10.4.0"
   },
   "scripts": {
     "test": "node node_modules/mocha/bin/mocha"
